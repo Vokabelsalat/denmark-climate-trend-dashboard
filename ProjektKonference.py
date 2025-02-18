@@ -1092,7 +1092,7 @@ def update_trend_map(mode, parameter_main, parameter_sub, selected_years, select
         trend_unit = "°C/year"
 
     # Initialize the figure
-    trend_map = go.Figure(go.Choroplethmapbox(
+    trend_map = go.Figure(go.Choroplethmap(
         geojson=geojson_data,
         featureidkey=feature_id,
         locations=trend_df["cell_id"],
@@ -1116,7 +1116,7 @@ def update_trend_map(mode, parameter_main, parameter_sub, selected_years, select
             # Assign the color based on its position in the selected_regions list
             region_color = COLOR_PALETTE[idx % len(COLOR_PALETTE)]  # Cycle through colors
 
-            trend_map.add_trace(go.Choroplethmapbox(
+            trend_map.add_trace(go.Choroplethmap(
                 geojson=geojson_data,
                 featureidkey=feature_id,
                 locations=region_data["cell_id"],
@@ -1138,7 +1138,7 @@ def update_trend_map(mode, parameter_main, parameter_sub, selected_years, select
     # Update map layout
     trend_map.update_layout(
         font=dict(family="Segoe UI, sans-serif"),
-        mapbox=dict(
+        map=dict(
             style="carto-positron",
             center={"lon": 11.5, "lat": 56.25},
             zoom=5.9
