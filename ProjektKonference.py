@@ -12,6 +12,8 @@ import plotly.express as px
 from plotly.colors import sample_colorscale
 from plotly.subplots import make_subplots
 
+import dash_daq as daq
+
 import warnings
 warnings.simplefilter('ignore', np.exceptions.RankWarning)
 
@@ -521,64 +523,120 @@ app.layout = html.Div(
                                 allowCross=True
                             )
                         ], style={"margin": "10px 0"}),
-                        html.Div([
-                            html.Label(
-                                "Select Parameter:", 
-                                style={"fontSize": "18px", "fontWeight": "bold", "margin": "0px"}
-                            ),
-                            dcc.RadioItems(
-                                id="parameter-dropdown",
-                                options=[
-                                    {"label": "Maximum Temperature", "value": "max_temp"},
-                                    {"label": "Mean Temperature", "value": "mean_temp"},
-                                    {"label": "Minimum Temperature", "value": "min_temp"},
-                                    {"label": "Accumulated Precipitation", "value": "acc_precip"}
-                                ],
-                                value="mean_temp",
-                                labelStyle={'display': 'block', 'fontSize': '18px', 'marginTop': "5px"}
-                            )
-                        ], style={"margin": "10px 0"}),
+                        html.Div(
+                            children=[
+                                # Left side: Existing parameter selection
+                                html.Div(
+                                    children=[
+                                        html.Label(
+                                            "Select Parameter:",
+                                            style={"fontSize": "18px", "fontWeight": "bold", "margin": "0px"}
+                                        ),
+                                        dcc.RadioItems(
+                                            id="parameter-dropdown",
+                                            options=[
+                                                {"label": "Max. Temp.", "value": "max_temp"},
+                                                {"label": "Mean Temp.", "value": "mean_temp"},
+                                                {"label": "Min. Temp.", "value": "min_temp"},
+                                                {"label": "Acc. Precip.", "value": "acc_precip"}
+                                            ],
+                                            value="mean_temp",
+                                            labelStyle={'display': 'block', 'fontSize': '18px', 'marginTop': "5px"}
+                                        )
+                                    ],
+                                    style={"flex": "1", "margin": "10px"}
+                                ),
+                                # Right side: New subparameter selection with four buttons
+                                html.Div(
+                                    children=[
+                                        html.Label(
+                                            "Select Subpara:",
+                                            style={"fontSize": "18px", "fontWeight": "bold", "margin": "0px"}
+                                        ),
+                                        dcc.RadioItems(
+                                            id="parameter-dropdown2",
+                                            options=[
+                                                {"label": "Ice Days", "value": "ice_para"},
+                                                {"label": "Heat. Deg. Days", "value": "heat_para"},
+                                                {"label": "Summer Days", "value": "summer_para"},
+                                                {"label": "Extreme Rain Days", "value": "extrain_para"}
+                                            ],
+                                            value="heat_para",
+                                            labelStyle={'display': 'block', 'fontSize': '18px', 'marginTop': "5px"}
+                                        )
+                                    ],
+                                    style={"flex": "1", "margin": "10px", "display": "flex", "flexDirection": "column"}
+                                )
+                            ],
+                            style={"display": "flex", "flexDirection": "row", "justifyContent": "space-between"}
+                        ),
                         html.Label(
                             "To select regions, click on map →", 
                             style={"fontSize": "18px", "fontWeight": "bold", "margin": "0px"}
                         ),
-                        html.A(
-                            html.Button(
-                                id="reset-button",
-                                style={
-                                    "width": "150px",
-                                    "height": "35px",
-                                    "backgroundColor": "rgba(220, 220, 220, 1)",
-                                    "border": "2px solid rgba(220, 220, 220, 1)",
-                                    "borderRadius": "14px",
-                                    "display": "flex",
-                                    "alignItems": "center",
-                                    "justifyContent": "center",
-                                    "gap": "10px",
-                                    "cursor": "pointer",
-                                    "padding": "6px"
-                                },
-                                n_clicks=0,
-                                title="Reset filters",
-                                children=[
-                                    html.Img(
-                                        src="/assets/reset.png",
-                                        style={"width": "25px", "height": "25px"}
-                                    ),
-                                    html.Span(
-                                        "Reset Filters",
+                        html.Div(
+                            children=[
+                                # Reset Filters button (unchanged)
+                                html.A(
+                                    html.Button(
+                                        id="reset-button",
                                         style={
-                                            "fontFamily": "Segoe UI, sans-serif",
-                                            "color": "black",
-                                            "fontSize": "16px",
-                                            "fontWeight": "bold"
-                                        }
-                                    )
-                                ]
-                            ),
-                            href="/",
-                            style={"textDecoration": "none", "margin": "10px 6px"}
+                                            "width": "150px",
+                                            "height": "35px",
+                                            "backgroundColor": "rgba(220, 220, 220, 1)",
+                                            "border": "2px solid rgba(220, 220, 220, 1)",
+                                            "borderRadius": "14px",
+                                            "display": "flex",
+                                            "alignItems": "center",
+                                            "justifyContent": "center",
+                                            "gap": "10px",
+                                            "cursor": "pointer",
+                                            "padding": "6px"
+                                        },
+                                        n_clicks=0,
+                                        title="Reset filters",
+                                        children=[
+                                            html.Img(
+                                                src="/assets/reset.png",
+                                                style={"width": "25px", "height": "25px"}
+                                            ),
+                                            html.Span(
+                                                "Reset Filters",
+                                                style={
+                                                    "fontFamily": "Segoe UI, sans-serif",
+                                                    "color": "black",
+                                                    "fontSize": "16px",
+                                                    "fontWeight": "bold"
+                                                }
+                                            )
+                                        ]
+                                    ),
+                                    href="/",
+                                    style={"textDecoration": "none", "margin": "10px 6px"}
+                                ),
+                                # Toggle switch container
+                                html.Div(
+                                    children=[
+                                        # Label that will update based on the toggle state
+                                        html.Div(
+                                            id="map-parameter-toggle-label",
+                                            children="Show main parameters on map",
+                                            style={"fontSize": "16px", "fontWeight": "bold", "marginRight": "10px"}
+                                        ),
+                                        # The toggle switch
+                                        daq.BooleanSwitch(
+                                            id="map-parameter-toggle",
+                                            on=False,  # Set default state here
+                                            color="purple",
+                                            style={"verticalAlign": "middle"}
+                                        )
+                                    ],
+                                    style={"display": "flex", "alignItems": "center"}
+                                )
+                            ],
+                            style={"display": "flex", "alignItems": "center"}
                         )
+
                     ], style={
                         "display": "flex",
                         "flexDirection": "column",
@@ -761,6 +819,13 @@ COLOR_PALETTE = ["gold", "coral", "mediumpurple"]
 COLOR_PALETTE2 = ["gold", "coral", "mediumpurple"]
 
 @app.callback(
+    Output("map-parameter-toggle-label", "children"),
+    Input("map-parameter-toggle", "on")
+)
+def update_toggle_label(is_on):
+    return "Display sub-parameters" if is_on else "Display main parameters"
+
+@app.callback(
     Output("info-sheet", "style"),
     [Input("info-button", "n_clicks"), Input("close-info", "n_clicks")],
     prevent_initial_call=True
@@ -869,17 +934,25 @@ def update_selected_months(tempwheel_clickData, selected_months):
 @app.callback(
     Output("temp-wheel", "figure"),
     [Input("parameter-dropdown", "value"),
+     Input("parameter-dropdown2", "value"),
      Input("year-slider", "value"),
-     Input("selected-months", "data")]
+     Input("selected-months", "data"),
+     Input("map-parameter-toggle", "on")]
 )
-def update_temp_wheel(parameter, selected_years, selected_months):
+def update_temp_wheel(parameter, parameter2, selected_years, selected_months, toggle_state):
     selected_year_1, selected_year_2 = sorted(selected_years)
-
+    
+    if toggle_state:
+        data = parameter_grid
+        parameter = parameter2
+    else:
+        data = data_grid
+    
     trend_values = []
     for month in range(1, 13):
-        monthly_data = data_grid[
-            (data_grid["year"].between(selected_year_1, selected_year_2)) &
-            (data_grid["month"] == month)
+        monthly_data = data[
+            (data["year"].between(selected_year_1, selected_year_2)) &
+            (data["month"] == month)
         ]
         if len(monthly_data) > 1:
             slope, _ = np.polyfit(monthly_data["year"], monthly_data[parameter], 1)
@@ -949,11 +1022,13 @@ def update_temp_wheel(parameter, selected_years, selected_months):
     Output("trend-map", "figure"),
     [Input("visualization-mode", "value"),
      Input("parameter-dropdown", "value"),
+     Input("parameter-dropdown2", "value"),
      Input("year-slider", "value"),
      Input("selected-months", "data"),
-     Input("selected-regions", "data")]
+     Input("selected-regions", "data"),
+     Input("map-parameter-toggle", "on")]
 )
-def update_trend_map(mode, parameter, selected_years, selected_months, selected_regions):
+def update_trend_map(mode, parameter_main, parameter_sub, selected_years, selected_months, selected_regions, toggle_state):
     selected_year_1, selected_year_2 = sorted(selected_years)
     
     # Mapping of parameters to user-friendly names
@@ -961,23 +1036,39 @@ def update_trend_map(mode, parameter, selected_years, selected_months, selected_
         "mean_temp": "Mean Temperature (°C)",
         "acc_precip": "Accumulated Precipitation (mm)",
         "max_temp": "Maximum Temperature (°C)",
-        "min_temp": "Minimum Temperature (°C)"
+        "min_temp": "Minimum Temperature (°C)",
+        "ice_para": "Ice Days",
+        "heat_para": "Heating Degree Days",
+        "summer_para": "Summer days",
+        "extrain_para": "Extreme Rain Days"
     }
 
-    # Get the user-friendly name of the selected parameter
-    parameter_name = PARAMETERS.get(parameter, parameter)  # Default to the parameter name if not found
-
-    if mode == "grid":
-        data = data_grid
-        geojson_data = geojson_grid_data
-        feature_id = "properties.cell_id"
-        hover_info = "%{location}"
+    if toggle_state:
+        parameter = parameter_sub
+        if mode == "grid":
+            data = parameter_grid
+            geojson_data = geojson_grid_data
+            feature_id = "properties.cell_id"
+            hover_info = "%{location}"
+        else:
+            data = parameter_municipality
+            geojson_data = geojson_municipality_data
+            feature_id = "properties.cell_id"
+            hover_info = "%{properties.municipality}"
     else:
-        data = data_municipality
-        geojson_data = geojson_municipality_data
-        feature_id = "properties.cell_id"
-        hover_info = "%{properties.municipality}"
+        parameter = parameter_main
+        if mode == "grid":
+            data = data_grid
+            geojson_data = geojson_grid_data
+            feature_id = "properties.cell_id"
+            hover_info = "%{location}"
+        else:
+            data = data_municipality
+            geojson_data = geojson_municipality_data
+            feature_id = "properties.cell_id"
+            hover_info = "%{properties.municipality}"
 
+    parameter_name = PARAMETERS.get(parameter, parameter)
     filtered_data = data[data["month"].isin(selected_months)]
 
     trend_data = []
@@ -1743,4 +1834,4 @@ def update_bar_chart(selected_months, selected_region_or_parameter, selected_reg
 
 
 if __name__ == "__main__":
-    app.run_server(debug=False, port=5050)       
+    app.run_server(debug=True, port=5050)       
