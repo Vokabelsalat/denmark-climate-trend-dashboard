@@ -10,7 +10,7 @@ import requests
 from datetime import datetime
 
 #%% Fetch Data from API
-headers = {"X-Gravitee-Api-Key": "eafec8a7-1fca-4fbe-bf86-7ce81cde0446"}
+headers = {"X-Gravitee-Api-Key": "Insert your API key here!"}
 
 url = "https://dmigw.govcloud.dk/v2/climateData/collections/10kmGridValue/items"
 

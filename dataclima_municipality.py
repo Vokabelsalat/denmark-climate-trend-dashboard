@@ -11,7 +11,7 @@ from datetime import datetime
 directory = r'/Users/lausc/OneDrive - Syddansk Universitet/Kandidat/7. semester/DM878 - Visualization/Projekt'
 
 # Define headers and base URL
-headers = {"X-Gravitee-Api-Key": "eafec8a7-1fca-4fbe-bf86-7ce81cde0446"}
+headers = {"X-Gravitee-Api-Key": "Insert your API key here!"}
 url = "https://dmigw.govcloud.dk/v2/climateData/collections/municipalityValue/items"
 
 # Define a helper function to fetch and process data

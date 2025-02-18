@@ -12,7 +12,7 @@ import geopandas as gpd
 from shapely.geometry import mapping  # Import for converting geometries to GeoJSON-compatible format
 
 #%% Fetch Data from API
-headers = {"X-Gravitee-Api-Key": "eafec8a7-1fca-4fbe-bf86-7ce81cde0446"}
+headers = {"X-Gravitee-Api-Key": "Insert your API key here!"}
 
 url = "https://dmigw.govcloud.dk/v2/climateData/collections/municipalityValue/items"
 

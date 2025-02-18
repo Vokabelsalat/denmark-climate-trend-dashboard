@@ -4,7 +4,7 @@ import requests
 from datetime import datetime
 
 url = "https://dmigw.govcloud.dk/v2/climateData/collections/municipalityValue/items"
-headers = {"X-Gravitee-Api-Key": "eafec8a7-1fca-4fbe-bf86-7ce81cde0446"}
+headers = {"X-Gravitee-Api-Key": "Insert your API key here!"}
 
 # Define a helper function to fetch and process data (only for 2011-2024)
 def fetch_climate_data(parameter_id, value_name):
