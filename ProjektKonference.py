@@ -18,12 +18,12 @@ import warnings
 warnings.simplefilter('ignore', np.exceptions.RankWarning)
 
 # File paths
-geojson_grid_file = "base_grid.geojson"
-geojson_municipality_file = "base_grid_municipality.geojson"
-csv_grid_file = "climate_data_combined_v2.csv"
-csv_municipality_file = "climate_data_municipality_combined.csv"
-csv_grid_parameter_file = "climate_parameters_combined_v2.csv"
-csv_municipality_parameter_file = "climate_parameters_municipality_combined_v2.csv"
+geojson_grid_file = "data/base_grid.geojson"
+geojson_municipality_file = "data/base_grid_municipality.geojson"
+csv_grid_file = "data/climate_data_combined_v2.csv"
+csv_municipality_file = "data/climate_data_municipality_combined.csv"
+csv_grid_parameter_file = "data/climate_parameters_combined_v2.csv"
+csv_municipality_parameter_file = "data/climate_parameters_municipality_combined_v2.csv"
 
 # Load the GeoJSON files
 with open(geojson_grid_file, "r") as f:
@@ -1736,4 +1736,4 @@ def update_bar_chart(selected_months, selected_region_or_parameter, selected_reg
 
 
 if __name__ == "__main__":
-    app.run_server(debug=True, port=5050)       
+    app.run_server(debug=True, port=80, host='0.0.0.0')
