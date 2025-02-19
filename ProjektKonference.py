@@ -524,7 +524,7 @@ app.layout = html.Div(
                                         style={"fontSize": "18px", "fontWeight": "bold", "margin": "0px"}
                                     ),
                                     dcc.RadioItems(
-                                        id="parameter-dropdown2",
+                                        id="pov-dropdown",
                                         options=[
                                             {"label": "All Params", "value": "Denmark"},
                                             {"label": "Ice Days", "value": "ice_para"},
@@ -830,7 +830,7 @@ def update_selected_months(tempwheel_clickData, selected_months):
 @app.callback(
     Output("temp-wheel", "figure"),
     [Input("parameter-dropdown", "value"),
-     Input("parameter-dropdown2", "value"),
+     Input("pov-dropdown", "value"),
      Input("year-slider", "value"),
      Input("selected-months", "data"),
      Input("map-parameter-toggle", "on")]
@@ -867,9 +867,14 @@ def update_temp_wheel(parameter, parameter2, selected_years, selected_months, to
         for value in trend_values
     ]
 
-    # Dynamically choose colorscale
-    colorscale = px.colors.diverging.BrBG if parameter == "acc_precip" else px.colors.diverging.RdBu_r
-    colors = sample_colorscale(colorscale, normalized_trends)
+    if toggle_state:
+        # Dynamically choose colorscale
+        colorscale = px.colors.diverging.PiYG
+        colors = sample_colorscale(colorscale, normalized_trends)
+    else:
+        # Dynamically choose colorscale
+        colorscale = px.colors.diverging.BrBG if parameter == "acc_precip" else px.colors.diverging.RdBu_r
+        colors = sample_colorscale(colorscale, normalized_trends)
 
     month_names = [
         "January", "February", "March", "April", "May", "June",
@@ -918,7 +923,7 @@ def update_temp_wheel(parameter, parameter2, selected_years, selected_months, to
     Output("trend-map", "figure"),
     [Input("visualization-mode", "value"),
      Input("parameter-dropdown", "value"),
-     Input("parameter-dropdown2", "value"),
+     Input("pov-dropdown", "value"),
      Input("year-slider", "value"),
      Input("selected-months", "data"),
      Input("selected-regions", "data"),
@@ -951,6 +956,95 @@ def update_trend_map(mode, parameter_main, parameter_sub, selected_years, select
             geojson_data = geojson_municipality_data
             feature_id = "properties.cell_id"
             hover_info = "%{properties.municipality}"
+    
+        parameter_name = PARAMETERS.get(parameter, parameter)
+        filtered_data = data[data["month"].isin(selected_months)]
+    
+        trend_data = []
+        for cell_id in filtered_data["cell_id"].unique():
+            cell_data = filtered_data[filtered_data["cell_id"] == cell_id]
+            yearly_data = cell_data[cell_data["year"].between(selected_year_1, selected_year_2)]
+    
+            aggregated = yearly_data.groupby("year", as_index=False)[parameter].sum() 
+            if len(aggregated) > 1:
+                slope, _ = np.polyfit(aggregated["year"], aggregated[parameter], 1)
+            else:
+                slope = None
+            trend_data.append({"cell_id": cell_id, "trend": slope})
+    
+        trend_df = pd.DataFrame(trend_data)
+        trend_df["trend"] = trend_df["trend"].fillna(0)
+        symmetric_max = max(abs(trend_df["trend"].min()), abs(trend_df["trend"].max()))
+        trend_unit = "days/year"
+    
+        # Initialize the figure
+        trend_map = go.Figure(go.Choroplethmapbox(
+            geojson=geojson_data,
+            featureidkey=feature_id,
+            locations=trend_df["cell_id"],
+            z=trend_df["trend"],
+            colorscale="PiYG",
+            zmin=-symmetric_max,
+            zmax=symmetric_max,
+            marker_opacity=0.8,
+            marker_line_width=0.5,
+            marker_line_color="black",  # Border color for the map
+            hovertemplate=(f"Location: {hover_info}<br>"
+                           f"Change: %{{z:.5f}} {trend_unit}<br>"
+                           # f"Year Range: {selected_year_1}-{selected_year_2}<br>"
+                           "<extra></extra>")
+        ))
+    
+        # Add custom colors for the selected regions, in order
+        if selected_regions:
+            for idx, region in enumerate(selected_regions):
+                region_data = trend_df[trend_df["cell_id"] == region]
+                # Assign the color based on its position in the selected_regions list
+                region_color = COLOR_PALETTE[idx % len(COLOR_PALETTE)]  # Cycle through colors
+    
+                trend_map.add_trace(go.Choroplethmapbox(
+                    geojson=geojson_data,
+                    featureidkey=feature_id,
+                    locations=region_data["cell_id"],
+                    z=[1] * len(region_data),  # Arbitrary z-values for highlighting
+                    colorscale=[[0, "rgba(0,0,0,0)"], [1, "rgba(0,0,0,0)"]],
+                    showscale=False,
+                    marker_opacity=1,
+                    marker_line_width=3,  # Border thickness
+                    marker_line_color=region_color,  # Apply the color to the border
+                    hoverinfo="skip"
+                ))
+    
+        # Define region names for the x-axis title
+        if len(selected_months) == 12:
+            map_title = f"Yearly change in {parameter_name} from {selected_year_1} to {selected_year_2}"
+        else:
+            map_title = f"Yearly change in {parameter_name} from {selected_year_1} to {selected_year_2} for selected month(s)"
+    
+        # Update map layout
+        trend_map.update_layout(
+            font=dict(family="Segoe UI, sans-serif"),
+            mapbox=dict(
+                style="carto-positron",
+                center={"lon": 11.5, "lat": 56.25},
+                zoom=5.9
+            ),
+            annotations=[
+            dict(
+                x=0.5,  # Centered horizontally
+                y=-0.025,  # Move the title below the map
+                xanchor="center",  # Center anchor horizontally
+                yanchor="top",  # Anchor it to the top
+                text=map_title,  # Title text
+                showarrow=False,  # No arrow
+                font=dict(size=14, color="black")  # Font size and color
+                )
+            ],
+            margin=dict(t=20, b=50, l=10)
+        )
+    
+        return trend_map
+    
     else:
         parameter = parameter_main
         if mode == "grid":
@@ -1534,43 +1628,43 @@ def update_monthly_trend_graph(mode, selected_regions, parameter):
 
     return fig
 
-# @app.callback(
-#     [Output("pov-dropdown", "options"),
-#      Output("pov-dropdown", "value")],
-#     [Input("selected-regions", "data"),
-#      Input("visualization-mode", "value"),
-#      Input("pov-dropdown", "value")]  # include current value as input
-# )
-# def update_region_dropdown(selected_regions, mode, current_value):
-#     # Start with Denmark as the default option.
-#     options = [{"label": "Ice Days", "value": "ice_para"},
-#                {"label": "Heating Degree Days", "value": "heat_para"},
-#                {"label": "Summer Days", "value": "summer_para"},
-#                {"label": "Extreme Rain Days", "value": "extrain_para"},
-#                {"label": "Denmark", "value": "Denmark"}]  # Default option
+@app.callback(
+    [Output("pov-dropdown", "options"),
+     Output("pov-dropdown", "value")],
+    [Input("selected-regions", "data"),
+     Input("visualization-mode", "value"),
+     Input("pov-dropdown", "value")]  # include current value as input
+)
+def update_region_dropdown(selected_regions, mode, current_value):
+    # Start with Denmark as the default option.
+    options = [{"label": "Ice Days", "value": "ice_para"},
+               {"label": "Heating Degree Days", "value": "heat_para"},
+               {"label": "Summer Days", "value": "summer_para"},
+               {"label": "Extreme Rain Days", "value": "extrain_para"},
+               {"label": "Denmark", "value": "Denmark"}]  # Default option
 
-#     if selected_regions:
-#         if mode == "grid":
-#             options.extend(
-#                 [{"label": region, "value": region} for region in selected_regions]
-#             )
-#         else:
-#             options.extend([{"label": next(f["properties"]["municipality"] for f in geojson_municipality_data["features"] if f["properties"]["cell_id"] == region), "value": region} for region in selected_regions])
+    if selected_regions:
+        if mode == "grid":
+            options.extend(
+                [{"label": region, "value": region} for region in selected_regions]
+            )
+        else:
+            options.extend([{"label": next(f["properties"]["municipality"] for f in geojson_municipality_data["features"] if f["properties"]["cell_id"] == region), "value": region} for region in selected_regions])
 
-#     # Gather the valid values from options.
-#     valid_values = [opt["value"] for opt in options]
+    # Gather the valid values from options.
+    valid_values = [opt["value"] for opt in options]
 
-#     # If the current value is not in the valid options,
-#     # default to "Denmark" (covers the case when a selected region is removed)
-#     if current_value not in valid_values:
-#         current_value = "Denmark"
+    # If the current value is not in the valid options,
+    # default to "Denmark" (covers the case when a selected region is removed)
+    if current_value not in valid_values:
+        current_value = "Denmark"
     
-#     return options, current_value
+    return options, current_value
 
 @app.callback(
     Output("bar_chart", "figure"),
     [Input("selected-months", "data"),
-     Input("parameter-dropdown2", "value"),
+     Input("pov-dropdown", "value"),
      Input("selected-regions", "data"),
      Input("visualization-mode", "value")]
 )
