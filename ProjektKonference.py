@@ -1157,7 +1157,7 @@ def update_trend_map(mode, parameter_main, parameter_sub, selected_years, select
         trend_unit = "days/year"
     
         # Initialize the figure
-        trend_map = go.Figure(go.Choroplethmap(
+        trend_map = go.Figure(go.Choroplethmapbox(
             geojson=geojson_data,
             featureidkey=feature_id,
             locations=trend_df["cell_id"],
@@ -1181,7 +1181,7 @@ def update_trend_map(mode, parameter_main, parameter_sub, selected_years, select
                 # Assign the color based on its position in the selected_regions list
                 region_color = COLOR_PALETTE[idx % len(COLOR_PALETTE)]  # Cycle through colors
     
-                trend_map.add_trace(go.Choroplethmap(
+                trend_map.add_trace(go.Choroplethmapbox(
                     geojson=geojson_data,
                     featureidkey=feature_id,
                     locations=region_data["cell_id"],
@@ -1203,7 +1203,7 @@ def update_trend_map(mode, parameter_main, parameter_sub, selected_years, select
         # Update map layout
         trend_map.update_layout(
             font=dict(family="Segoe UI, sans-serif"),
-            map=dict(
+            mapbox=dict(
                 style="carto-positron",
                 center={"lon": 11.5, "lat": 56.25},
                 zoom=5.9
@@ -1261,7 +1261,7 @@ def update_trend_map(mode, parameter_main, parameter_sub, selected_years, select
             trend_unit = "°C/year"
     
         # Initialize the figure
-        trend_map = go.Figure(go.Choroplethmap(
+        trend_map = go.Figure(go.Choroplethmapbox(
             geojson=geojson_data,
             featureidkey=feature_id,
             locations=trend_df["cell_id"],
@@ -1285,7 +1285,7 @@ def update_trend_map(mode, parameter_main, parameter_sub, selected_years, select
                 # Assign the color based on its position in the selected_regions list
                 region_color = COLOR_PALETTE[idx % len(COLOR_PALETTE)]  # Cycle through colors
     
-                trend_map.add_trace(go.Choroplethmap(
+                trend_map.add_trace(go.Choroplethmapbox(
                     geojson=geojson_data,
                     featureidkey=feature_id,
                     locations=region_data["cell_id"],
@@ -1307,7 +1307,7 @@ def update_trend_map(mode, parameter_main, parameter_sub, selected_years, select
         # Update map layout
         trend_map.update_layout(
             font=dict(family="Segoe UI, sans-serif"),
-            map=dict(
+            mapbox=dict(
                 style="carto-positron",
                 center={"lon": 11.5, "lat": 56.25},
                 zoom=5.9
@@ -2094,7 +2094,126 @@ def update_bar_chart(selected_months, selected_parameter, selected_regions, mode
     
     return fig
 
+@app.callback(
+    Output("selected_year", "data"),
+    [Input("bar_chart", "clickData"),
+     Input("reset-zoom", "n_clicks")],
+    State("selected_year", "data")
+)
+def update_selected_year(clickData, reset_n, selected_year):
+    ctx = callback_context
+    if not ctx.triggered:
+        return selected_year
+    trigger_id = ctx.triggered[0]["prop_id"].split(".")[0]
+    if trigger_id == "reset-zoom":
+        return None  # Reset the zoom to the yearly view
+    if clickData:
+        # If no year is currently selected, store the clicked bar's x-value (assumed to be a year)
+        if selected_year is None:
+            return clickData["points"][0]["x"]
+    return selected_year
+
+#### USE CASES ####
+# FARMER
+@app.callback(
+    [Output("selected-months", "data", allow_duplicate=True),
+     Output("parameter-dropdown", "value"),
+     Output("parameter-dropdown2", "value"),
+     Output("visualization-mode", "value", allow_duplicate=True),
+     Output("stored-selected-regions", "data", allow_duplicate=True)],
+    Input("farmer-button", "n_clicks"),
+    prevent_initial_call=True
+)
+def apply_preset_farmer(n_clicks):
+    if n_clicks:
+        # Set months to May, June, July, August
+        preset_months = [5, 6, 7, 8]
+        # Set the main parameter to accumulated precipitation
+        preset_parameter = "acc_precip"
+        # Set the sub parameter to extreme rain days
+        preset_subparameter = "extrain_para"
+        # Ensure visualization-mode is municipality grid
+        preset_mode = "municipality"
+        # Set the selected regions (Aabenraa, Tønder)
+        preset_regions = ["0580", "0550"]
+        return preset_months, preset_parameter, preset_subparameter, preset_mode, preset_regions
+    return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
+
+# SUMMERHOUSE
+@app.callback(
+    [Output("selected-months", "data", allow_duplicate=True),
+     Output("parameter-dropdown", "value", allow_duplicate=True),
+     Output("parameter-dropdown2", "value", allow_duplicate=True),
+     Output("visualization-mode", "value", allow_duplicate=True),
+     Output("stored-selected-regions", "data", allow_duplicate=True)],
+    Input("summerhouse-button", "n_clicks"),
+    prevent_initial_call=True
+)
+def apply_preset_summerhouse(n_clicks):
+    if n_clicks:
+        # Set months to June, July, August
+        preset_months = [6, 7, 8]
+        # Set the main parameter to mean temperature
+        preset_parameter = "mean_temp"
+        # Set the sub parameter to summer days
+        preset_subparameter = "summer_para"
+        # Ensure visualization-mode is municipality grid
+        preset_mode = "municipality"
+        # Set the selected regions (Frederikshavn, Guldborgsund, Bornholm)
+        preset_regions = ["0813", "0376", "0400"]
+        return preset_months, preset_parameter, preset_subparameter, preset_mode, preset_regions
+    return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
+
+# GARDEN
+@app.callback(
+    [Output("selected-months", "data", allow_duplicate=True),
+     Output("parameter-dropdown", "value", allow_duplicate=True),
+     Output("parameter-dropdown2", "value", allow_duplicate=True),
+     Output("visualization-mode", "value", allow_duplicate=True),
+     Output("stored-selected-regions", "data", allow_duplicate=True)],
+    Input("garden-button", "n_clicks"),
+    prevent_initial_call=True
+)
+def apply_preset_garden(n_clicks):
+    if n_clicks:
+        # Set months to Februrary, March, April, May
+        preset_months = [2, 3, 4, 5]
+        # Set the main parameter to minimum temperature
+        preset_parameter = "min_temp"
+        # Set the sub parameter to ice days
+        preset_subparameter = "ice_para"
+        # Ensure visualization-mode is municipality grid
+        preset_mode = "municipality"
+        # Set the selected regions (Greve)
+        preset_regions = ["0253"]
+        return preset_months, preset_parameter, preset_subparameter, preset_mode, preset_regions
+    return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
+
+# ENERGY EFFICIENCY
+@app.callback(
+    [Output("selected-months", "data", allow_duplicate=True),
+     Output("parameter-dropdown", "value", allow_duplicate=True),
+     Output("parameter-dropdown2", "value", allow_duplicate=True),
+     Output("visualization-mode", "value", allow_duplicate=True),
+     Output("stored-selected-regions", "data", allow_duplicate=True)],
+    Input("energy-button", "n_clicks"),
+    prevent_initial_call=True
+)
+def apply_preset_energy(n_clicks):
+    if n_clicks:
+        # Set months to September, October, November, December
+        preset_months = [9, 10, 11, 12]
+        # Set the main parameter to minimum temperature
+        preset_parameter = "min_temp"
+        # Set the sub parameter to heating degree days
+        preset_subparameter = "heat_para"
+        # Ensure visualization-mode is 10x10 grid
+        preset_mode = "grid"
+        # Set the selected regions (Aarhus, 0751) vil gerne rette til 10km_622_56, trend fra, sub på map
+        preset_regions = ["10km_622_56"]
+        return preset_months, preset_parameter, preset_subparameter, preset_mode, preset_regions
+    return dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
 
 if __name__ == "__main__":
-    app.run_server(debug=True, port=80, host='0.0.0.0')
+    app.run_server(debug=True, port=80, host='0.0.0.0')     
