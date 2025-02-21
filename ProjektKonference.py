@@ -13,7 +13,8 @@ from plotly.colors import sample_colorscale
 from plotly.subplots import make_subplots
 
 import dash_daq as daq
-from use_cases import use_cases
+from use_cases import use_cases, use_cases_data
+from info_sheet import info_sheet
 
 import warnings
 warnings.simplefilter('ignore', np.exceptions.RankWarning)
@@ -61,6 +62,7 @@ app.layout = html.Div(
             # Hidden stores for selected data
             dcc.Store(id="selected-months", data=[]),
             dcc.Store(id="selected-regions", data=[]),
+            info_sheet,
             html.Div([
                 # All the use case buttons imported from use_cases.py
                 use_cases,
@@ -1327,254 +1329,108 @@ def update_selected_year(clickData, reset_n, selected_year):
             return clickData["points"][0]["x"]
     return selected_year
 
+
+
 #### USE CASES ####
-# FARMER
-@app.callback(
-    [Output("selected-months", "data", allow_duplicate=True),
-     Output("parameter-dropdown", "value"),
-     Output("parameter-dropdown2", "value"),
-     Output("visualization-mode", "value", allow_duplicate=True),
-     Output("stored-selected-regions", "data", allow_duplicate=True)],
-    Input("farmer-button", "n_clicks"),
-    prevent_initial_call=True
-)
-def apply_preset_farmer(n_clicks):
-    if n_clicks:
-        # Set months to May, June, July, August
-        preset_months = [5, 6, 7, 8]
-        # Set the main parameter to accumulated precipitation
-        preset_parameter = "acc_precip"
-        # Set the sub parameter to extreme rain days
-        preset_subparameter = "extrain_para"
-        # Ensure visualization-mode is municipality grid
-        preset_mode = "municipality"
-        # Set the selected regions (Aabenraa, Tønder)
-        preset_regions = ["0580", "0550"]
-        return preset_months, preset_parameter, preset_subparameter, preset_mode, preset_regions
-    return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
+preset_data = {
+    "garden-button": {
+        "months": [2, 3, 4, 5],
+        "parameter": "min_temp",
+        "subparameter": "ice_para",
+        "mode": "municipality",
+        "regions": ["0253"]
+    },
+    "energy-button": {
+        "months": [9, 10, 11, 12],
+        "parameter": "min_temp",
+        "subparameter": "heat_para",
+        "mode": "grid",
+        "regions": ["10km_622_56"]
+    },
+    "farmer-button": {
+        "months": [5, 6, 7, 8],
+        "parameter": "acc_precip",
+        "subparameter": "extrain_para",
+        "mode": "municipality",
+        "regions": ["0580", "0550"]
+    },
+    "summerhouse-button": {
+        "months": [6, 7, 8],
+        "parameter": "mean_temp",
+        "subparameter": "summer_para",
+        "mode": "municipality",
+        "regions": ["0813", "0376", "0400"]
+    }
+}
 
-# SUMMERHOUSE
-@app.callback(
-    [Output("selected-months", "data", allow_duplicate=True),
-     Output("parameter-dropdown", "value", allow_duplicate=True),
-     Output("parameter-dropdown2", "value", allow_duplicate=True),
-     Output("visualization-mode", "value", allow_duplicate=True),
-     Output("stored-selected-regions", "data", allow_duplicate=True)],
-    Input("summerhouse-button", "n_clicks"),
-    prevent_initial_call=True
-)
-def apply_preset_summerhouse(n_clicks):
-    if n_clicks:
-        # Set months to June, July, August
-        preset_months = [6, 7, 8]
-        # Set the main parameter to mean temperature
-        preset_parameter = "mean_temp"
-        # Set the sub parameter to summer days
-        preset_subparameter = "summer_para"
-        # Ensure visualization-mode is municipality grid
-        preset_mode = "municipality"
-        # Set the selected regions (Frederikshavn, Guldborgsund, Bornholm)
-        preset_regions = ["0813", "0376", "0400"]
-        return preset_months, preset_parameter, preset_subparameter, preset_mode, preset_regions
-    return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
-
-# GARDEN
 @app.callback(
     [Output("selected-months", "data", allow_duplicate=True),
      Output("parameter-dropdown", "value", allow_duplicate=True),
      Output("parameter-dropdown2", "value", allow_duplicate=True),
      Output("visualization-mode", "value", allow_duplicate=True),
      Output("stored-selected-regions", "data", allow_duplicate=True)],
-    Input("garden-button", "n_clicks"),
+    [Input(button_id, "n_clicks") for button_id in preset_data.keys()],
     prevent_initial_call=True
 )
-def apply_preset_garden(n_clicks):
-    if n_clicks:
-        # Set months to Februrary, March, April, May
-        preset_months = [2, 3, 4, 5]
-        # Set the main parameter to minimum temperature
-        preset_parameter = "min_temp"
-        # Set the sub parameter to ice days
-        preset_subparameter = "ice_para"
-        # Ensure visualization-mode is municipality grid
-        preset_mode = "municipality"
-        # Set the selected regions (Greve)
-        preset_regions = ["0253"]
-        return preset_months, preset_parameter, preset_subparameter, preset_mode, preset_regions
+def apply_preset(*args):
+    ctx = callback_context
+    if not ctx.triggered:
+        return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
+
+    # Identify which button was clicked
+    triggered_id = ctx.triggered[0]['prop_id'].split('.')[0]
+
+    # Fetch the corresponding preset data
+    if triggered_id in preset_data:
+        preset = preset_data[triggered_id]
+        return preset["months"], preset["parameter"], preset["subparameter"], preset["mode"], preset["regions"]
+
     return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
-# ENERGY EFFICIENCY
-@app.callback(
-    [Output("selected-months", "data", allow_duplicate=True),
-     Output("parameter-dropdown", "value", allow_duplicate=True),
-     Output("parameter-dropdown2", "value", allow_duplicate=True),
-     Output("visualization-mode", "value", allow_duplicate=True),
-     Output("stored-selected-regions", "data", allow_duplicate=True)],
-    Input("energy-button", "n_clicks"),
-    prevent_initial_call=True
-)
-def apply_preset_energy(n_clicks):
-    if n_clicks:
-        # Set months to September, October, November, December
-        preset_months = [9, 10, 11, 12]
-        # Set the main parameter to minimum temperature
-        preset_parameter = "min_temp"
-        # Set the sub parameter to heating degree days
-        preset_subparameter = "heat_para"
-        # Ensure visualization-mode is 10x10 grid
-        preset_mode = "grid"
-        # Set the selected regions (Aarhus, 0751) vil gerne rette til 10km_622_56, trend fra, sub på map
-        preset_regions = ["10km_622_56"]
-        return preset_months, preset_parameter, preset_subparameter, preset_mode, preset_regions
-    return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
-# Callback to toggle the Use Case (Summerhouse) info sheet
-@app.callback(
-    Output("usecase-summerhouse-sheet", "style"),
-    [Input("usecase-summerhouse-button", "n_clicks"), Input("usecase-summerhouse-close", "n_clicks")],
-    prevent_initial_call=True
-)
-def toggle_usecase_summerhouse_sheet(usecase_summerhouse_clicks, close_clicks):
-    ctx = callback_context
-    triggered_id = ctx.triggered[0]['prop_id'].split('.')[0]
-    if triggered_id == "usecase-summerhouse-button":
-        return {
-            "position": "fixed",
-            "top": "0",  # Drop down from the top
-            "left": "50%",
-            "transform": "translateX(-50%)",
-            "width": "50%",
-            "backgroundColor": "white",
-            "boxShadow": "0 2px 10px rgba(0,0,0,0.3)",
-            "padding": "20px",
-            "zIndex": "5",
-            "transition": "top 0.3s ease"
-        }
-    elif triggered_id == "usecase-summerhouse-close":
-        return {
-            "position": "fixed",
-            "top": "-100%",  # Hide above the screen
-            "left": "50%",
-            "transform": "translateX(-50%)",
-            "width": "50%",
-            "backgroundColor": "white",
-            "boxShadow": "0 2px 10px rgba(0,0,0,0.3)",
-            "padding": "20px",
-            "zIndex": "5",
-            "transition": "top 0.3s ease"
-        }
-    return dash.no_update
+# Extract IDs from use_cases_data dynamically
+usecase_ids = [case["id"] for case in use_cases_data]
 
-# Callback to toggle the Use Case (Farmer) info sheet
 @app.callback(
-    Output("usecase-sheet-farmer", "style"),
-    [Input("usecase-button-farmer", "n_clicks"), Input("close-usecase-farmer", "n_clicks")],
+    [Output(f"{usecase_id}-sheet", "style") for usecase_id in usecase_ids],
+    sum([[Input(f"{usecase_id}-button", "n_clicks"), Input(f"{usecase_id}-close", "n_clicks")] for usecase_id in usecase_ids], []),
     prevent_initial_call=True
 )
-def toggle_usecase_farmer_sheet(usecase_farmer_clicks, close_clicks):
+def toggle_usecase_sheets(*args):
     ctx = callback_context
-    triggered_id = ctx.triggered[0]['prop_id'].split('.')[0]
-    if triggered_id == "usecase-button-farmer":
-        return {
-            "position": "fixed",
-            "top": "0",  # Drop down from the top
-            "left": "50%",
-            "transform": "translateX(-50%)",
-            "width": "50%",
-            "backgroundColor": "white",
-            "boxShadow": "0 2px 10px rgba(0,0,0,0.3)",
-            "padding": "20px",
-            "zIndex": "5",
-            "transition": "top 0.3s ease"
-        }
-    elif triggered_id == "close-usecase-farmer":
-        return {
-            "position": "fixed",
-            "top": "-100%",  # Hide above the screen
-            "left": "50%",
-            "transform": "translateX(-50%)",
-            "width": "50%",
-            "backgroundColor": "white",
-            "boxShadow": "0 2px 10px rgba(0,0,0,0.3)",
-            "padding": "20px",
-            "zIndex": "5",
-            "transition": "top 0.3s ease"
-        }
-    return dash.no_update
+    if not ctx.triggered:
+        return [dash.no_update] * len(usecase_ids)
 
-# Callback to toggle the Use Case (Garden) info sheet
-@app.callback(
-    Output("usecase-sheet-garden", "style"),
-    [Input("usecase-button-garden", "n_clicks"), Input("close-usecase-garden", "n_clicks")],
-    prevent_initial_call=True
-)
-def toggle_usecase_garden_sheet(usecase_garden_clicks, close_clicks):
-    ctx = callback_context
+    # Identify which button was clicked
     triggered_id = ctx.triggered[0]['prop_id'].split('.')[0]
-    if triggered_id == "usecase-button-garden":
-        return {
-            "position": "fixed",
-            "top": "0",  # Drop down from the top
-            "left": "50%",
-            "transform": "translateX(-50%)",
-            "width": "50%",
-            "backgroundColor": "white",
-            "boxShadow": "0 2px 10px rgba(0,0,0,0.3)",
-            "padding": "20px",
-            "zIndex": "5",
-            "transition": "top 0.3s ease"
-        }
-    elif triggered_id == "close-usecase-garden":
-        return {
-            "position": "fixed",
-            "top": "-100%",  # Hide above the screen
-            "left": "50%",
-            "transform": "translateX(-50%)",
-            "width": "50%",
-            "backgroundColor": "white",
-            "boxShadow": "0 2px 10px rgba(0,0,0,0.3)",
-            "padding": "20px",
-            "zIndex": "5",
-            "transition": "top 0.3s ease"
-        }
-    return dash.no_update
 
-# Callback to toggle the Use Case info sheet
-@app.callback(
-    Output("usecase-sheet-energy", "style"),
-    [Input("usecase-button-energy", "n_clicks"), Input("close-usecase-energy", "n_clicks")],
-    prevent_initial_call=True
-)
-def toggle_usecase_energy_sheet(usecase_energy_clicks, close_clicks):
-    ctx = callback_context
-    triggered_id = ctx.triggered[0]['prop_id'].split('.')[0]
-    if triggered_id == "usecase-button-energy":
-        return {
-            "position": "fixed",
-            "top": "0",  # Drop down from the top
-            "left": "50%",
-            "transform": "translateX(-50%)",
-            "width": "50%",
-            "backgroundColor": "white",
-            "boxShadow": "0 2px 10px rgba(0,0,0,0.3)",
-            "padding": "20px",
-            "zIndex": "5",
-            "transition": "top 0.3s ease"
-        }
-    elif triggered_id == "close-usecase-energy":
-        return {
-            "position": "fixed",
-            "top": "-100%",  # Hide above the screen
-            "left": "50%",
-            "transform": "translateX(-50%)",
-            "width": "50%",
-            "backgroundColor": "white",
-            "boxShadow": "0 2px 10px rgba(0,0,0,0.3)",
-            "padding": "20px",
-            "zIndex": "5",
-            "transition": "top 0.3s ease"
-        }
-    return dash.no_update
+    # Generate a default hidden state for all sheets
+    hidden_state = {
+        "position": "fixed",
+        "top": "-100%",  # Hide above the screen
+        "left": "50%",
+        "transform": "translateX(-50%)",
+        "width": "50%",
+        "backgroundColor": "white",
+        "boxShadow": "0 2px 10px rgba(0,0,0,0.3)",
+        "padding": "20px",
+        "zIndex": "5",
+        "transition": "top 0.3s ease"
+    }
+
+    # Generate an open state (shown) for the triggered sheet
+    open_state = hidden_state.copy()
+    open_state["top"] = "0"  # Drop down from the top
+
+    # Determine which sheet to show/hide
+    output_states = []
+    for usecase_id in usecase_ids:
+        if triggered_id == f"{usecase_id}-button":
+            output_states.append(open_state)  # Show this sheet
+        else:
+            output_states.append(hidden_state)  # Hide all others
+
+    return output_states
 
 if __name__ == "__main__":
     app.run_server(debug=True, port=80, host='0.0.0.0')     

@@ -84,7 +84,6 @@ body {
     border-radius: 18px; /* Rounded corners */
     display: flex; /* Flexbox for alignment */
     align-items: center; /* Center content vertically */
-    /* justify-content: left; */ /* Center content horizontally (commented out in original) */
     gap: 14px; /* Space between symbol and text */
     cursor: pointer;
     padding: 10px; /* Add padding for better spacing */
@@ -151,4 +150,21 @@ body {
     display: flex;
     flex-direction: row;
     gap: 10px;
+}
+
+.subtitle {
+    font-size: 24px;  /* Smaller size for the subtitle */
+    font-weight: bold;  /* Bold text for the subtitle */
+    margin-bottom: 5px;  /* Space below the subtitle */
+    text-align: left;  /* Align to the left */
+    color: #555555;  /* Slightly lighter color for the subtitle */
+}
+
+.paragraph-text {
+    font-size: 18px;
+    font-weight: normal;
+    color: #333333;
+    margin-top: 0px;
+    line-height: 1.5;
+    text-align: justify;
 }

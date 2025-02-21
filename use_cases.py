@@ -1,5 +1,7 @@
 # layout.py
 from dash import dcc, html
+from dash.dependencies import Input, Output
+from dash import callback_context
 
 use_cases_data = [
     {
@@ -97,4 +99,153 @@ def create_use_button(button_data):
 
 use_cases = html.Div(children=sum([create_use_button(x) for x in use_cases_data],[]), className="usecase-wrapepr")
 
-    
+
+
+
+# # Callback to toggle the Use Case (Summerhouse) info sheet
+# @app.callback(
+#     Output("usecase-summerhouse-sheet", "style"),
+#     [Input("usecase-summerhouse-button", "n_clicks"), Input("usecase-summerhouse-close", "n_clicks")],
+#     prevent_initial_call=True
+# )
+# def toggle_usecase_summerhouse_sheet(usecase_summerhouse_clicks, close_clicks):
+#     ctx = callback_context
+#     triggered_id = ctx.triggered[0]['prop_id'].split('.')[0]
+#     if triggered_id == "usecase-summerhouse-button":
+#         return {
+#             "position": "fixed",
+#             "top": "0",  # Drop down from the top
+#             "left": "50%",
+#             "transform": "translateX(-50%)",
+#             "width": "50%",
+#             "backgroundColor": "white",
+#             "boxShadow": "0 2px 10px rgba(0,0,0,0.3)",
+#             "padding": "20px",
+#             "zIndex": "5",
+#             "transition": "top 0.3s ease"
+#         }
+#     elif triggered_id == "usecase-summerhouse-close":
+#         return {
+#             "position": "fixed",
+#             "top": "-100%",  # Hide above the screen
+#             "left": "50%",
+#             "transform": "translateX(-50%)",
+#             "width": "50%",
+#             "backgroundColor": "white",
+#             "boxShadow": "0 2px 10px rgba(0,0,0,0.3)",
+#             "padding": "20px",
+#             "zIndex": "5",
+#             "transition": "top 0.3s ease"
+#         }
+#     return dash.no_update
+
+# # Callback to toggle the Use Case (Farmer) info sheet
+# @app.callback(
+#     Output("usecase-sheet-farmer", "style"),
+#     [Input("usecase-button-farmer", "n_clicks"), Input("close-usecase-farmer", "n_clicks")],
+#     prevent_initial_call=True
+# )
+# def toggle_usecase_farmer_sheet(usecase_farmer_clicks, close_clicks):
+#     ctx = callback_context
+#     triggered_id = ctx.triggered[0]['prop_id'].split('.')[0]
+#     if triggered_id == "usecase-button-farmer":
+#         return {
+#             "position": "fixed",
+#             "top": "0",  # Drop down from the top
+#             "left": "50%",
+#             "transform": "translateX(-50%)",
+#             "width": "50%",
+#             "backgroundColor": "white",
+#             "boxShadow": "0 2px 10px rgba(0,0,0,0.3)",
+#             "padding": "20px",
+#             "zIndex": "5",
+#             "transition": "top 0.3s ease"
+#         }
+#     elif triggered_id == "close-usecase-farmer":
+#         return {
+#             "position": "fixed",
+#             "top": "-100%",  # Hide above the screen
+#             "left": "50%",
+#             "transform": "translateX(-50%)",
+#             "width": "50%",
+#             "backgroundColor": "white",
+#             "boxShadow": "0 2px 10px rgba(0,0,0,0.3)",
+#             "padding": "20px",
+#             "zIndex": "5",
+#             "transition": "top 0.3s ease"
+#         }
+#     return dash.no_update
+
+# # Callback to toggle the Use Case (Garden) info sheet
+# @app.callback(
+#     Output("usecase-sheet-garden", "style"),
+#     [Input("usecase-button-garden", "n_clicks"), Input("close-usecase-garden", "n_clicks")],
+#     prevent_initial_call=True
+# )
+# def toggle_usecase_garden_sheet(usecase_garden_clicks, close_clicks):
+#     ctx = callback_context
+#     triggered_id = ctx.triggered[0]['prop_id'].split('.')[0]
+#     if triggered_id == "usecase-button-garden":
+#         return {
+#             "position": "fixed",
+#             "top": "0",  # Drop down from the top
+#             "left": "50%",
+#             "transform": "translateX(-50%)",
+#             "width": "50%",
+#             "backgroundColor": "white",
+#             "boxShadow": "0 2px 10px rgba(0,0,0,0.3)",
+#             "padding": "20px",
+#             "zIndex": "5",
+#             "transition": "top 0.3s ease"
+#         }
+#     elif triggered_id == "close-usecase-garden":
+#         return {
+#             "position": "fixed",
+#             "top": "-100%",  # Hide above the screen
+#             "left": "50%",
+#             "transform": "translateX(-50%)",
+#             "width": "50%",
+#             "backgroundColor": "white",
+#             "boxShadow": "0 2px 10px rgba(0,0,0,0.3)",
+#             "padding": "20px",
+#             "zIndex": "5",
+#             "transition": "top 0.3s ease"
+#         }
+#     return dash.no_update
+
+# # Callback to toggle the Use Case info sheet
+# @app.callback(
+#     Output("usecase-sheet-energy", "style"),
+#     [Input("usecase-button-energy", "n_clicks"), Input("close-usecase-energy", "n_clicks")],
+#     prevent_initial_call=True
+# )
+# def toggle_usecase_energy_sheet(usecase_energy_clicks, close_clicks):
+#     ctx = callback_context
+#     triggered_id = ctx.triggered[0]['prop_id'].split('.')[0]
+#     if triggered_id == "usecase-button-energy":
+#         return {
+#             "position": "fixed",
+#             "top": "0",  # Drop down from the top
+#             "left": "50%",
+#             "transform": "translateX(-50%)",
+#             "width": "50%",
+#             "backgroundColor": "white",
+#             "boxShadow": "0 2px 10px rgba(0,0,0,0.3)",
+#             "padding": "20px",
+#             "zIndex": "5",
+#             "transition": "top 0.3s ease"
+#         }
+#     elif triggered_id == "close-usecase-energy":
+#         return {
+#             "position": "fixed",
+#             "top": "-100%",  # Hide above the screen
+#             "left": "50%",
+#             "transform": "translateX(-50%)",
+#             "width": "50%",
+#             "backgroundColor": "white",
+#             "boxShadow": "0 2px 10px rgba(0,0,0,0.3)",
+#             "padding": "20px",
+#             "zIndex": "5",
+#             "transition": "top 0.3s ease"
+#         }
+#     return dash.no_update
