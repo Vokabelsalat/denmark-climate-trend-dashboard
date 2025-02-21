@@ -93,7 +93,7 @@ def create_use_button(button_data):
                 "textAlign": "center"
             }),
             *[html.P(y, className="usecase-p") for y in button_data["paragraphs"]],
-            html.Button("Apply filters!", id=button_data['id']+"button", n_clicks=0, className="filter-button scale-on-hover")
+            html.Button("Apply filters!", id=button_data['id']+"-filter-button", n_clicks=0, className="filter-button scale-on-hover")
         ])
     ]
 

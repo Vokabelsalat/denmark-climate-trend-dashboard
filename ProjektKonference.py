@@ -45,7 +45,7 @@ app = dash.Dash(__name__)
 
 app.layout = html.Div(
     [
-        html.Div(id="info-sheet"),
+        html.Div(id="info-sheet", style={"position": "absolute"}),
         html.Div([
             html.A(
                 children=[html.Div(
@@ -62,6 +62,9 @@ app.layout = html.Div(
             # Hidden stores for selected data
             dcc.Store(id="selected-months", data=[]),
             dcc.Store(id="selected-regions", data=[]),
+            dcc.Store(id="selected_year", data=None),
+            dcc.Store(id="stored-selected-regions", data=[]),
+            
             info_sheet,
             html.Div([
                 # All the use case buttons imported from use_cases.py
@@ -91,22 +94,241 @@ app.layout = html.Div(
             ], style={"display": "flex", "flexDirection": "row", "gap": "10px"})
         ], className="headerWrapper"),
         html.Div([
-        ], className="mapWrapper"),
-        html.Div([
-        ], className="menuWrapper"),
-        html.Div([
-        ], className="lineChartWrapper"),
-        html.Div([
-        ], className="timeSlideWrapper"),
-        html.Div([
-        ], className="barChartWrapper"),
+            html.Div([
+                    html.Div([
+                        html.Div([
+                            html.Label(
+                                "Select/Deselect Month(s):", 
+                                style={"fontSize": "18px", "fontWeight": "bold", "margin": "0px"}
+                            ),
+                            dcc.Graph(
+                                id="temp-wheel", 
+                                style={"width": "95%", "height": "200px", "margin": "0px 0"}, 
+                                config={"displayModeBar": False}
+                            ),
+                            html.Div([
+                                html.Label(
+                                    "Select Year Range:", 
+                                    style={"fontSize": "18px", "fontWeight": "bold", "margin": "0px"}
+                                ),
+                                dcc.RangeSlider(
+                                    id="year-slider",
+                                    min=int(data_grid["year"].min()),
+                                    max=int(data_grid["year"].max()),
+                                    step=1,
+                                    marks={
+                                        int(year): {
+                                            'label': str(year), 
+                                            'style': {'transform': 'rotate(45deg)', 'white-space': 'nowrap'}
+                                        } for year in data_grid["year"].unique()
+                                    },
+                                    value=[2011, 2024],
+                                    allowCross=True
+                                )
+                            ], style={"margin": "10px 0", "display": "none"}),
+                            html.Div(
+                                children=[
+                                    # Left side: Existing parameter selection
+                                    html.Div(
+                                        children=[
+                                            html.Label(
+                                                "Select Parameter:",
+                                                style={"fontSize": "18px", "fontWeight": "bold", "margin": "0px"}
+                                            ),
+                                            dcc.RadioItems(
+                                                id="parameter-dropdown",
+                                                options=[
+                                                    {"label": "Max. Temp.", "value": "max_temp"},
+                                                    {"label": "Mean Temp.", "value": "mean_temp"},
+                                                    {"label": "Min. Temp.", "value": "min_temp"},
+                                                    {"label": "Acc. Precip.", "value": "acc_precip"}
+                                                ],
+                                                value="mean_temp",
+                                                labelStyle={'display': 'block', 'fontSize': '18px', 'marginTop': "5px"}
+                                            )
+                                        ],
+                                        style={"flex": "1", "margin": "10px"}
+                                    ),
+                                    # Right side: New subparameter selection with four buttons
+                                    html.Div(
+                                        children=[
+                                            html.Label(
+                                                "Select Subpara:",
+                                                style={"fontSize": "18px", "fontWeight": "bold", "margin": "0px"}
+                                            ),
+                                            dcc.RadioItems(
+                                                id="parameter-dropdown2",
+                                                options=[
+                                                    {"label": "Ice Days", "value": "ice_para"},
+                                                    {"label": "Heat. Deg. Days", "value": "heat_para"},
+                                                    {"label": "Summer Days", "value": "summer_para"},
+                                                    {"label": "Extreme Rain Days", "value": "extrain_para"}
+                                                ],
+                                                value="heat_para",
+                                                labelStyle={'display': 'block', 'fontSize': '18px', 'marginTop': "5px"}
+                                            )
+                                        ],
+                                        style={"flex": "1", "margin": "10px", "display": "flex", "flexDirection": "column"}
+                                    )
+                                ],
+                                style={"display": "flex", "flexDirection": "row", "justifyContent": "space-between"}
+                            ),
+                            html.Label(
+                                "To select regions, click on map →", 
+                                style={"fontSize": "18px", "fontWeight": "bold", "margin": "0px"}
+                            ),
+                            html.Div(
+                                children=[
+                                    # Reset Filters button (unchanged)
+                                    html.A(
+                                        html.Button(
+                                            id="reset-button",
+                                            style={
+                                                "width": "150px",
+                                                "height": "35px",
+                                                "backgroundColor": "rgba(220, 220, 220, 1)",
+                                                "border": "2px solid rgba(220, 220, 220, 1)",
+                                                "borderRadius": "14px",
+                                                "display": "flex",
+                                                "alignItems": "center",
+                                                "justifyContent": "center",
+                                                "gap": "10px",
+                                                "cursor": "pointer",
+                                                "padding": "6px"
+                                            },
+                                            n_clicks=0,
+                                            title="Reset filters",
+                                            children=[
+                                                html.Img(
+                                                    src="/assets/reset.png",
+                                                    style={"width": "25px", "height": "25px"}
+                                                ),
+                                                html.Span(
+                                                    "Reset Filters",
+                                                    style={
+                                                        "fontFamily": "Segoe UI, sans-serif",
+                                                        "color": "black",
+                                                        "fontSize": "16px",
+                                                        "fontWeight": "bold"
+                                                    }
+                                                )
+                                            ]
+                                        ),
+                                        href="/",
+                                        style={"textDecoration": "none", "margin": "10px 6px"}
+                                    ),
+                                    # Toggle switch container
+                                    html.Div(
+                                        children=[
+                                            # Label that will update based on the toggle state
+                                            html.Div(
+                                                id="map-parameter-toggle-label",
+                                                children="Show main parameters on map",
+                                                style={"fontSize": "16px", "fontWeight": "bold", "marginRight": "10px"}
+                                            ),
+                                            # The toggle switch
+                                            daq.BooleanSwitch(
+                                                id="map-parameter-toggle",
+                                                on=False,  # Set default state here
+                                                color="purple",
+                                                style={"verticalAlign": "middle"}
+                                            )
+                                        ],
+                                        style={"display": "flex", "alignItems": "center"}
+                                    )
+                                ],
+                                style={"display": "flex", "alignItems": "center"}
+                            )
+
+                        ], style={
+                            "display": "flex",
+                            "flexDirection": "column",
+                            "width": "100%",
+                            "boxSizing": "border-box"
+                        }),
+                        html.Button("Reset Zoom", id="reset-zoom", n_clicks=0),
+                    ], style={
+                        "width": "100%",
+                        "height": "100%",
+                        "display": "inline-block",
+                        "verticalAlign": "top"
+                    })
+            ], className="menuWrapper"),
+            html.Div([
+                dcc.Graph(id="trend-map", style={"width": "100%", "height": "100%", "position": "relative", "z-index": "1"}, config={"displayModeBar": False},),
+                    html.Div([
+                        html.Label("Spatial Resolution:", style={"fontSize": "18px", "fontWeight": "bold", "marginBottom": "5px"}),
+                        dcc.RadioItems(
+                            id="visualization-mode",
+                            options=[
+                                {"label": "Municipalities", "value": "municipality"},
+                                {"label": "10x10km grid", "value": "grid"}
+                            ],
+                            value="municipality",  # Default mode
+                            labelStyle={'display': 'block', 'font-size': '18px'},
+                        )
+                    ], style={
+                        "position": "absolute",
+                        "top": "21px",
+                        "left": "11px",
+                        "z-index": "2",
+                        "background": "rgba(255, 255, 255, 0.7)",
+                        "padding": "10px",
+                        "border-radius": "5px",
+                        "box-shadow": "0 2px 5px rgba(0,0,0,0.2)",
+                    })
+            ], className="mapWrapper"),
+        ], className="leftColumn"),
+        html.Div(
+        [
+            html.Div([
+                dcc.Graph(
+                    id="timeline",
+                    style={"width": "100%", "height": "100%", "margin": "0px"},
+                    config={"displayModeBar": False}
+                ),
+                html.Div(
+                    dcc.Checklist(
+                        id="trendline-toggle",
+                        options=[{"label": "Show Trendlines", "value": "show"}],
+                        value=["show"],
+                        labelStyle={"fontSize": "16px", "fontWeight": "bold"}
+                    ),
+                    style={
+                        "position": "absolute",
+                        "top": "5px",
+                        "right": "5px",
+                        "backgroundColor": "rgba(255,255,255,0.7)",
+                        "padding": "5px",
+                        "borderRadius": "5px",
+                        "zIndex": "3"
+                    }
+                )
+            ], className="lineChartWrapper"),
+            html.Div([
+            ], className="timeSlideWrapper"),
+            html.Div([
+                dcc.Graph(
+                    id="bar_chart",
+                    style={"width": "105%", "height": "100%"},
+                    config={"displayModeBar": False},
+                ),
+                dcc.Checklist(
+                    id="barchart-toggle",
+                    options=[{"label": "Show Trendlines", "value": "show"}],
+                    value=["show"],
+                    labelStyle={"fontSize": "16px", "fontWeight": "bold"},
+                    style={"position": "absolute", "top": "5px", "right": "5px"}
+                ),
+            ], className="barChartWrapper"),
+        ]
+        , className="rightColumn"),
     ],
     className="main"
 )
 
 # Colors for municipalities
 COLOR_PALETTE = ["gold", "coral", "mediumpurple"]
-COLOR_PALETTE2 = ["gold", "coral", "mediumpurple"]
 
 @app.callback(
     Output("map-parameter-toggle-label", "children"),
@@ -728,7 +950,6 @@ def update_timeline(parameter, selected_years, selected_months, selected_regions
             zerolinecolor="lightgrey"
         ),
         margin={"r": 40, "t": 40, "l": 40, "b": 40},
-        height=600,
         showlegend=True,
         legend=dict(
             orientation="h",
@@ -1333,28 +1554,28 @@ def update_selected_year(clickData, reset_n, selected_year):
 
 #### USE CASES ####
 preset_data = {
-    "garden-button": {
+    "usecase-garden-filter-button": {
         "months": [2, 3, 4, 5],
         "parameter": "min_temp",
         "subparameter": "ice_para",
         "mode": "municipality",
         "regions": ["0253"]
     },
-    "energy-button": {
+    "usecase-energy-filter-button": {
         "months": [9, 10, 11, 12],
         "parameter": "min_temp",
         "subparameter": "heat_para",
         "mode": "grid",
         "regions": ["10km_622_56"]
     },
-    "farmer-button": {
+    "usecase-farmer-filter-button": {
         "months": [5, 6, 7, 8],
         "parameter": "acc_precip",
         "subparameter": "extrain_para",
         "mode": "municipality",
         "regions": ["0580", "0550"]
     },
-    "summerhouse-button": {
+    "usecase-summerhouse-filter-button": {
         "months": [6, 7, 8],
         "parameter": "mean_temp",
         "subparameter": "summer_para",
