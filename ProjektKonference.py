@@ -312,6 +312,18 @@ app.layout = html.Div(
                     style={"width": "105%", "height": "100%"},
                     config={"displayModeBar": False},
                 ),
+                html.Label(
+                    id="dynamic-label",
+                    style={
+                        "fontSize": "18px",
+                        "fontWeight": "bold",
+                        "margin": "0px",
+                        "marginRight": "10px",
+                        "position": "absolute",
+                        "top": "5px",
+                        "left": "5px"
+                    }
+                ),
                 dcc.Checklist(
                     id="barchart-toggle",
                     options=[{"label": "Show Trendlines", "value": "show"}],
@@ -1529,6 +1541,48 @@ def update_bar_chart(selected_months, selected_parameter, selected_regions, mode
     fig.update_yaxes(rangemode="nonnegative")
     
     return fig
+
+@app.callback(
+    Output("dynamic-label", "children"),
+    [Input("parameter-dropdown2", "value"),
+     Input("selected-regions", "data"),
+     Input("selected_year", "data"),
+     Input("visualization-mode", "value")]
+)
+def update_label(selected_parameter, selected_regions, selected_year, mode):
+    
+    # Save useful name for regions
+    for region in selected_regions:
+        if mode == "municipality":
+            region_str = str(region)
+            feature = next(
+                (f for f in geojson_municipality_data["features"] 
+                 if str(f["properties"].get("cell_id", "")) == region_str),
+                None
+            )
+            region_name = feature["properties"].get("municipality", f"Region {region}") if feature else f"Region {region}"
+        else:
+            region_name = str(region)
+    
+    # Save useful name for parameters
+    # Define parameters for the bar charts
+    parameters = {
+        "ice_para": "Ice Days",
+        "heat_para": "Heating Degree Days",
+        "summer_para": "Summer Days",
+        "extrain_para": "Extreme Rain Days"
+    }
+    
+    selected_parameter_name = parameters.get(selected_parameter)
+    
+    # Create text
+    distribution_text = "Yearly" if selected_year == None else "Monthly"
+    parameter_text = "all parameters" if len(selected_regions) <= 1 else f"{selected_parameter_name}"
+    region_text = ("in Denmark" if len(selected_regions) == 0 else f"in {region_name}" if len(selected_regions) == 1 else "")
+    year_text = "" if selected_year == None else f"for {selected_year}"
+
+    return f"{distribution_text} distribution of {parameter_text} {region_text} {year_text}"
+
 
 @app.callback(
     Output("selected_year", "data"),
