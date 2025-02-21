@@ -13,6 +13,8 @@ from plotly.colors import sample_colorscale
 from plotly.subplots import make_subplots
 
 import dash_daq as daq
+from use_cases import use_cases, use_cases_data
+from info_sheet import info_sheet
 
 import warnings
 warnings.simplefilter('ignore', np.exceptions.RankWarning)
@@ -42,1057 +44,218 @@ parameter_municipality = pd.read_csv(csv_municipality_parameter_file, dtype={"ce
 app = dash.Dash(__name__)
 
 app.layout = html.Div(
-    children=[
-        html.Div([ 
-            # Container for the text and info button
-            html.Div(
-                style={
-                    "position": "absolute",
-                    "top": "15px",
-                    "right": "15px",
-                    "display": "flex",  # Use flexbox to align text and button side by side
-                    "alignItems": "center",  # Vertically center align the text and button
-                },
-                children=[
-                    # use case button
-                    # New Use Case button
-                    html.Button(
-                        id="usecase-button-summerhouse",
-                        style={
-                            "width": "165px",
-                            "height": "45px",
-                            "backgroundColor": "rgba(213, 227, 211)",
-                            "border": "2px solid rgba(191, 227, 186)",
-                            "borderRadius": "18px",
-                            "display": "flex",
-                            "alignItems": "center",
-                            "justifyContent": "left",
-                            "gap": "14px",
-                            "cursor": "pointer",
-                            "transition": "all 0.1s ease",
-                            "padding": "10px",
-                            "marginLeft": "10px",
-                            "marginRight": "10px"
-                        },
-                        n_clicks=0,
-                        title="Click for Information on Summerhouse Use Case",
-                        children=[
-                            html.Img(src="/assets/summerhouse_icon.webp", style={"width": "25px", "height": "25px"}),
-                            html.Span("Summerhouse", style={
-                                "fontFamily": "Times New Roman, Times, serif",
-                                "color": "black",
-                                "fontSize": "17px",
-                                "fontWeight": "bold"
-                            })
-                        ]
-                    ),
-                    # Use Case info sheet (drops down from the top and centered)
-                    html.Div(
-                        id="usecase-sheet-summerhouse",
-                        style={
-                            "position": "fixed",
-                            "top": "-100%",  # Initially hidden above the screen
-                            "left": "50%",
-                            "transform": "translateX(-50%)",
-                            "width": "50%",
-                            "backgroundColor": "white",
-                            "boxShadow": "0 2px 10px rgba(0,0,0,0.3)",
-                            "padding": "20px",
-                            "zIndex": "5",
-                            "transition": "top 0.3s ease"
-                        },
-                        children=[
-                            html.Button("Close", id="close-usecase-summerhouse", style={
-                                "position": "absolute",
-                                "top": "10px",
-                                "right": "10px",
-                                "backgroundColor": "#FF0000",
-                                "color": "white",
-                                "border": "none",
-                                "padding": "10px",
-                                "borderRadius": "5px",
-                                "cursor": "pointer"
-                            }),
-                            html.H2("Use Case: A Family Looking for a Summerhouse", style={
-                                "fontSize": "32px",
-                                "fontWeight": "bold",
-                                "color": "#333333",
-                                "marginBottom": "5px",
-                                "textAlign": "center"
-                            }),
-                            html.P("A family looking for a summerhouse along the Danish coast will want to know how warm and pleasant the summers have been in different regions. This view highlights June through August in Frederikshavn, Guldborgsund, and Bornholm, showing both average temperatures and the number of summer days. The data can help identify which locations have the most stable and inviting summer climate, making it easier to choose the perfect spot for a summer retreat.",
-                                   style={
-                                       "fontSize": "18px",
-                                       "color": "#333333",
-                                       "marginTop": "10px",
-                                       "lineHeight": "1.5",
-                                       "textAlign": "left"
-                                   }),
-                            html.P("If you want to explore this data further and adjust the settings yourself, click the 'Apply Filters' button.",
-                                   style={
-                                       "fontSize": "18px",
-                                       "color": "#333333",
-                                       "marginTop": "10px",
-                                       "lineHeight": "1.5",
-                                       "textAlign": "left"
-                                   }),
-                            html.P("Results: Across Denmark, average summer temperatures have been rising, indicating that summers are becoming warmer. The number of summer days (above X°C) has increased, making the climate more attractive for vacationing. Among the selected locations, Bornholm stands out with the highest increase in warm summer days as well as the warmest mean temperature, making it a particularly appealing destination for those seeking consistent, warm summer weather.",
-                                   style={
-                                       "fontSize": "18px",
-                                       "color": "#333333",
-                                       "marginTop": "10px",
-                                       "lineHeight": "1.5",
-                                       "textAlign": "left"
-                                   }),
-                            html.Button("Apply filters", id="summerhouse-button", n_clicks=0,
-                                        style={
-                                            "width": "110px",  # Adjust width to accommodate text
-                                            "height": "45px",
-                                            "backgroundColor": "rgba(226, 182, 247, 0.8)",  # Light purple background
-                                            "border": "2px solid rgba(206, 159, 229, 0.8)",  # Slightly darker purple border
-                                            "borderRadius": "18px",  # Rounded corners
-                                            "display": "flex",  # Flexbox for alignment
-                                            "alignItems": "center",  # Center content vertically
-                                            "justifyContent": "left",  # Center content horizontally
-                                            "gap": "14px",  # Space between symbol and text
-                                            "cursor": "pointer",
-                                            "transition": "all 0.1s ease",  # Smooth transition for hover effect
-                                            "padding": "10px",  # Add padding for better spacing
-                                            "margin-right": "10px",  # Space between buttons
-                                            },
-                                        )
-                        ]
-                    ),
-                    
-                    # New Use Case (farmer) button
-                    html.Button(
-                        id="usecase-button-farmer",
-                        style={
-                            "width": "165px",
-                            "height": "45px",
-                            "backgroundColor": "rgba(213, 227, 211)",
-                            "border": "2px solid rgba(191, 227, 186)",
-                            "borderRadius": "18px",
-                            "display": "flex",
-                            "alignItems": "center",
-                            "justifyContent": "left",
-                            "gap": "14px",
-                            "cursor": "pointer",
-                            "transition": "all 0.1s ease",
-                            "padding": "10px",
-                            "marginLeft": "10px",
-                            "marginRight": "10px"
-                        },
-                        n_clicks=0,
-                        title="Click for information on Farmer Use Case",
-                        children=[
-                            html.Img(src="/assets/Farmer_icon.webp", style={"width": "25px", "height": "25px"}),
-                            html.Span("Farmer", style={
-                                "fontFamily": "Times New Roman, Times, serif",
-                                "color": "black",
-                                "fontSize": "17px",
-                                "fontWeight": "bold"
-                            })
-                        ]
-                    ),
-                    # Use Case info sheet (drops down from the top and centered)
-                    html.Div(
-                        id="usecase-sheet-farmer",
-                        style={
-                            "position": "fixed",
-                            "top": "-100%",  # Initially hidden above the screen
-                            "left": "50%",
-                            "transform": "translateX(-50%)",
-                            "width": "50%",
-                            "backgroundColor": "white",
-                            "boxShadow": "0 2px 10px rgba(0,0,0,0.3)",
-                            "padding": "20px",
-                            "zIndex": "5",
-                            "transition": "top 0.3s ease"
-                        },
-                        children=[
-                            html.Button("Close", id="close-usecase-farmer", style={
-                                "position": "absolute",
-                                "top": "10px",
-                                "right": "10px",
-                                "backgroundColor": "#FF0000",
-                                "color": "white",
-                                "border": "none",
-                                "padding": "10px",
-                                "borderRadius": "5px",
-                                "cursor": "pointer"
-                            }),
-                            html.H2("Use Case: A Farmer in Aabenraa and Tønder", style={
-                                "fontSize": "32px",
-                                "fontWeight": "bold",
-                                "color": "#333333",
-                                "marginBottom": "5px",
-                                "textAlign": "center"
-                            }),
-                            html.P("A farmer located in Aabenraa or Tønder needs to keep a close eye on rainfall patterns during the growing season. This view focuses on May through August, showing both total precipitation and the number of extreme rain days. Reviewing the trends can help determine whether heavy rainfall events are becoming more frequent, which might require better drainage solutions or adjustments to irrigation planning.",
-                                   style={
-                                       "fontSize": "18px",
-                                       "color": "#333333",
-                                       "marginTop": "10px",
-                                       "lineHeight": "1.5",
-                                       "textAlign": "left"
-                                   }),
-                            html.P("If you want to explore this data further and adjust the settings yourself, click the 'Apply Filters' button.",
-                                   style={
-                                       "fontSize": "18px",
-                                       "color": "#333333",
-                                       "marginTop": "10px",
-                                       "lineHeight": "1.5",
-                                       "textAlign": "left"
-                                   }),
-                            html.P("Results: The data reveals a rapid decline in total precipitation for Aabenraa and Tønder compared to the rest of Denmark. Additionally, the number of extreme rain days (above 10mm) has decreased, which could indicate that farmers may need to rely more on irrigation systems to maintain optimal soil moisture. This suggests a notable shift towards drier growing seasons, potentially impacting crop yields and requiring changes in water management strategies.",
-                                   style={
-                                       "fontSize": "18px",
-                                       "color": "#333333",
-                                       "marginTop": "10px",
-                                       "lineHeight": "1.5",
-                                       "textAlign": "left"
-                                   }),
-                            html.Button("Apply filters", id="farmer-button", n_clicks=0,
-                                        style={
-                                            "width": "110px",  # Adjust width to accommodate text
-                                            "height": "45px",
-                                            "backgroundColor": "rgba(226, 182, 247, 0.8)",  # Light purple background
-                                            "border": "2px solid rgba(206, 159, 229, 0.8)",  # Slightly darker purple border
-                                            "borderRadius": "18px",  # Rounded corners
-                                            "display": "flex",  # Flexbox for alignment
-                                            "alignItems": "center",  # Center content vertically
-                                            "justifyContent": "left",  # Center content horizontally
-                                            "gap": "14px",  # Space between symbol and text
-                                            "cursor": "pointer",
-                                            "transition": "all 0.1s ease",  # Smooth transition for hover effect
-                                            "padding": "10px",  # Add padding for better spacing
-                                            "margin-right": "10px",  # Space between buttons
-                                            },
-                                        )
-                        ]
-                    ),
-                    
-                    # New Use Case (garden) button
-                    html.Button(
-                        id="usecase-button-garden",
-                        style={
-                            "width": "165px",
-                            "height": "45px",
-                            "backgroundColor": "rgba(213, 227, 211)",
-                            "border": "2px solid rgba(191, 227, 186)",
-                            "borderRadius": "18px",
-                            "display": "flex",
-                            "alignItems": "center",
-                            "justifyContent": "left",
-                            "gap": "14px",
-                            "cursor": "pointer",
-                            "transition": "all 0.1s ease",
-                            "padding": "10px",
-                            "marginLeft": "10px",
-                            "marginRight": "10px"
-                        },
-                        n_clicks=0,
-                        title="Click for information on Garden Use Case",
-                        children=[
-                            html.Img(src="/assets/flower_icon.webp", style={"width": "25px", "height": "25px"}),
-                            html.Span("Garden", style={
-                                "fontFamily": "Times New Roman, Times, serif",
-                                "color": "black",
-                                "fontSize": "17px",
-                                "fontWeight": "bold"
-                            })
-                        ]
-                    ),
-                    # Use Case info sheet (drops down from the top and centered)
-                    html.Div(
-                        id="usecase-sheet-garden",
-                        style={
-                            "position": "fixed",
-                            "top": "-100%",  # Initially hidden above the screen
-                            "left": "50%",
-                            "transform": "translateX(-50%)",
-                            "width": "50%",
-                            "backgroundColor": "white",
-                            "boxShadow": "0 2px 10px rgba(0,0,0,0.3)",
-                            "padding": "20px",
-                            "zIndex": "5",
-                            "transition": "top 0.3s ease"
-                        },
-                        children=[
-                            html.Button("Close", id="close-usecase-garden", style={
-                                "position": "absolute",
-                                "top": "10px",
-                                "right": "10px",
-                                "backgroundColor": "#FF0000",
-                                "color": "white",
-                                "border": "none",
-                                "padding": "10px",
-                                "borderRadius": "5px",
-                                "cursor": "pointer"
-                            }),
-                            html.H2("Use Case: A Gardener in Greve", style={
-                                "fontSize": "32px",
-                                "fontWeight": "bold",
-                                "color": "#333333",
-                                "marginBottom": "5px",
-                                "textAlign": "center"
-                            }),
-                            html.P("A gardener in Greve planning for the upcoming season needs to know when frost risks fade and planting conditions improve. This view tracks February through May, focusing on minimum temperatures and ice days. Looking at these trends can help determine whether spring is arriving earlier, allowing for an extended planting season, or if late frosts remain a concern that could impact garden planning.",
-                                   style={
-                                       "fontSize": "18px",
-                                       "color": "#333333",
-                                       "marginTop": "10px",
-                                       "lineHeight": "1.5",
-                                       "textAlign": "left"
-                                   }),
-                            html.P("If you want to explore this data further and adjust the settings yourself, click the 'Apply Filters' button.",
-                                   style={
-                                       "fontSize": "18px",
-                                       "color": "#333333",
-                                       "marginTop": "10px",
-                                       "lineHeight": "1.5",
-                                       "textAlign": "left"
-                                   }),
-                            html.P("Results: The data shows that minimum temperatures in early spring have been steadily increasing, indicating a clear warming trend. At the same time, the number of ice days has decreased, suggesting that planting can now begin earlier than in previous years without significant frost risk. In particular, Greve’s frost risk in March and April has been lower compared to past years, making it possible for gardeners to extend their growing season and plant more sensitive species earlier in the year.",
-                                   style={
-                                       "fontSize": "18px",
-                                       "color": "#333333",
-                                       "marginTop": "10px",
-                                       "lineHeight": "1.5",
-                                       "textAlign": "left"
-                                   }),
-                            html.Button("Apply filters", id="garden-button", n_clicks=0,
-                                        style={
-                                            "width": "110px",  # Adjust width to accommodate text
-                                            "height": "45px",
-                                            "backgroundColor": "rgba(226, 182, 247, 0.8)",  # Light purple background
-                                            "border": "2px solid rgba(206, 159, 229, 0.8)",  # Slightly darker purple border
-                                            "borderRadius": "18px",  # Rounded corners
-                                            "display": "flex",  # Flexbox for alignment
-                                            "alignItems": "center",  # Center content vertically
-                                            "justifyContent": "left",  # Center content horizontally
-                                            "gap": "14px",  # Space between symbol and text
-                                            "cursor": "pointer",
-                                            "transition": "all 0.1s ease",  # Smooth transition for hover effect
-                                            "padding": "10px",  # Add padding for better spacing
-                                            "margin-right": "10px",  # Space between buttons
-                                            },
-                                        )
-                        ]
-                    ),
-                    
-                    # New Use Case (energy) button
-                    html.Button(
-                        id="usecase-button-energy",
-                        style={
-                            "width": "165px",
-                            "height": "45px",
-                            "backgroundColor": "rgba(213, 227, 211)",
-                            "border": "2px solid rgba(191, 227, 186)",
-                            "borderRadius": "18px",
-                            "display": "flex",
-                            "alignItems": "center",
-                            "justifyContent": "left",
-                            "gap": "14px",
-                            "cursor": "pointer",
-                            "transition": "all 0.1s ease",
-                            "padding": "10px",
-                            "marginLeft": "10px",
-                            "marginRight": "50px"
-                        },
-                        n_clicks=0,
-                        title="Click for information on Energy Use Case",
-                        children=[
-                            html.Img(src="/assets/energy_icon.jpg", style={"width": "25px", "height": "25px"}),
-                            html.Span("Energy", style={
-                                "fontFamily": "Times New Roman, Times, serif",
-                                "color": "black",
-                                "fontSize": "17px",
-                                "fontWeight": "bold"
-                            })
-                        ]
-                    ),
-                    # Use Case info sheet (drops down from the top and centered)
-                    html.Div(
-                        id="usecase-sheet-energy",
-                        style={
-                            "position": "fixed",
-                            "top": "-100%",  # Initially hidden above the screen
-                            "left": "50%",
-                            "transform": "translateX(-50%)",
-                            "width": "50%",
-                            "backgroundColor": "white",
-                            "boxShadow": "0 2px 10px rgba(0,0,0,0.3)",
-                            "padding": "20px",
-                            "zIndex": "5",
-                            "transition": "top 0.3s ease"
-                        },
-                        children=[
-                            html.Button("Close", id="close-usecase-energy", style={
-                                "position": "absolute",
-                                "top": "10px",
-                                "right": "10px",
-                                "backgroundColor": "#FF0000",
-                                "color": "white",
-                                "border": "none",
-                                "padding": "10px",
-                                "borderRadius": "5px",
-                                "cursor": "pointer"
-                            }),
-                            html.H2("Use Case: An Energy Efficiency Planner in Aarhus", style={
-                                "fontSize": "32px",
-                                "fontWeight": "bold",
-                                "color": "#333333",
-                                "marginBottom": "5px",
-                                "textAlign": "center"
-                            }),
-                            html.P("A homeowner or building manager in Aarhus interested in energy efficiency can use this view to assess how autumn temperatures impact heating demand. Covering September through December, it displays minimum temperatures and heating degree days, helping to track whether autumns are becoming milder. Reviewing this data can provide insight into whether heating demand is decreasing over time and whether investments in insulation or energy-saving measures are needed.",
-                                   style={
-                                       "fontSize": "18px",
-                                       "color": "#333333",
-                                       "marginTop": "10px",
-                                       "lineHeight": "1.5",
-                                       "textAlign": "left"
-                                   }),
-                            html.P("If you want to explore this data further and adjust the settings yourself, click the 'Apply Filters' button.",
-                                   style={
-                                       "fontSize": "18px",
-                                       "color": "#333333",
-                                       "marginTop": "10px",
-                                       "lineHeight": "1.5",
-                                       "textAlign": "left"
-                                   }),
-                            html.P("Results: The data shows that minimum autumn temperatures have been decreasing, meaning colder nights during the fall season. However, heating degree days have remained stable, suggesting that overall heating demand has not significantly changed. Given this stability, homeowners may not need to make additional investments in insulation, energy-efficient windows, or alternative heating sources at this time, as heating requirements have remained consistent over the years",
-                                   style={
-                                       "fontSize": "18px",
-                                       "color": "#333333",
-                                       "marginTop": "10px",
-                                       "lineHeight": "1.5",
-                                       "textAlign": "left"
-                                   }),
-                            html.Button("Apply filters", id="energy-button", n_clicks=0,
-                                        style={
-                                            "width": "110px",  # Adjust width to accommodate text
-                                            "height": "45px",
-                                            "backgroundColor": "rgba(226, 182, 247, 0.8)",  # Light purple background
-                                            "border": "2px solid rgba(206, 159, 229, 0.8)",  # Slightly darker purple border
-                                            "borderRadius": "18px",  # Rounded corners
-                                            "display": "flex",  # Flexbox for alignment
-                                            "alignItems": "center",  # Center content vertically
-                                            "justifyContent": "left",  # Center content horizontally
-                                            "gap": "14px",  # Space between symbol and text
-                                            "cursor": "pointer",
-                                            "transition": "all 0.1s ease",  # Smooth transition for hover effect
-                                            "padding": "10px",  # Add padding for better spacing
-                                            "margin-right": "1px",  # Space between buttons
-                                            },
-                                        )
-                        ]
-                    ),
-                    
-                    
-                    # Info button
-                    html.Button(
-                        id="info-button",
-                        style={
-                            "width": "220px",  # Adjust width to accommodate text
-                            "height": "45px",
-                            "backgroundColor": "rgba(214, 234, 248, 1)",  # Light blue background
-                            "border": "2px solid rgba(174, 214, 241, 1)",  # Slightly darker blue border
-                            "borderRadius": "18px",  # Rounded corners
-                            "display": "flex",  # Flexbox for alignment
-                            "alignItems": "center",  # Center content vertically
-                            "justifyContent": "left",  # Center content horizontally
-                            "gap": "14px",  # Space between symbol and text
-                            "cursor": "pointer",
-                            "transition": "all 0.1s ease",  # Smooth transition for hover effect
-                            "padding": "10px",  # Add padding for better spacing
-                        },
-                        n_clicks=0,
-                        title="Click for information",  # Tooltip text on hover
-                        children=[
-                            html.Img(
-                                src="/assets/info_button.png",  # Path to the symbol image
-                                style={
-                                    "width": "25px",
-                                    "height": "25px",
-                                    #"backgroundColor": "transparent",  # Ensure background is transparent
-                                    #"display": "block",  # Remove extra white space around the image
-                                }
-                            ),
-                            html.Span(
-                                "Dashboard guide",
-                                style={
-                                    "fontFamily": "Times New Roman, Times, serif", # Font family
-                                    "color": "black ",  # Text color
-                                    "fontSize": "20px",  # Font size
-                                    "fontWeight": "bold",  # Bold text
-                                }
-                            ),
-                        ]
-                    )
-        
-                ]
-            ),
-        
-            # Side sheet
-            html.Div(
-                id="info-sheet",
-                style={
-                    "position": "fixed",
-                    "top": "0",
-                    "right": "-100%",  # Start hidden off-screen
-                    "width": "30%",  # Adjust width as needed
-                    "height": "100%",
-                    "backgroundColor": "white",
-                    "boxShadow": "0 2px 10px rgba(0,0,0,0.3)",
-                    "padding": "20px",
-                    "overflowY": "auto",
-                    "zIndex": "4",
-                    "transition": "right 1s ease",  # Smooth sliding effect
-                },
-                children=[
-                    html.Button("Close", id="close-info", style={
-                        "position": "absolute",
-                        "top": "10px",
-                        "right": "10px",
-                        "backgroundColor": "#FF0000",
-                        "color": "white",
-                        "border": "none",
-                        "padding": "10px",
-                        "borderRadius": "5px",
-                        "cursor": "pointer"
-                    }),
-                    html.H2(
-                        "Dashboard Explanation", 
-                        style={
-                            "fontSize": "32px",  # Larger size for main title
-                            "fontWeight": "bold",  # Bold text for emphasis
-                            "color": "#333333",  # Dark color for text
-                            "marginBottom": "5px",  # Space below the main title
-                            "textAlign": "left",  # Align to the left
-                        }
-                    ),
-        
-                    # Donut Chart
-                    html.Div(
-                        children=[
-                            html.H3(
-                                "Select/Deselect Month(s) (Donut Chart)", 
-                                style={
-                                    "fontSize": "24px",  # Smaller size for the subtitle
-                                    "fontWeight": "bold",  # Bold text for the subtitle
-                                    "marginBottom": "5px",  # Space below the subtitle
-                                    "textAlign": "left",  # Align to the left
-                                    "color": "#555555",  # Slightly lighter color for the subtitle
-                                }
-                            ),
-                            html.P(
-                                'The Donut Chart visualizes the yearly change in each month for the selected parameter over the range of the selected years. The twelve segments correspond to months of the year, and corresponding magnitude and direction of monthly change is displayed next to each segment. Selection and deselection of months is enabled through clicking on corresponding segments of the donut chart, which are then pulled out to highlight these. ',
-                                style={
-                                    "fontSize": "18px",  
-                                    "fontWeight": "normal",  
-                                    "color": "#333333",  
-                                    "marginTop": "0px",  
-                                    "marginBottom": "10px",  # Space between the text and image
-                                    "lineHeight": "1.5",  
-                                    "textAlign": "justify",  
-                                }
-                            ),
-                            html.Div(
-                                children=[
-                                    html.Img(
-                                        src="/assets/temp_wheel.png", 
-                                        style={"width": "75%", "height": "auto", "margin": "0px"}
-                                    )
-                                ],
-                                style={"textAlign": "left"}  # Centers the image
-                            )
-                        ],
-                        style={"display": "flex", "flexDirection": "column", "alignItems": "flex-start"}
-                    ),
-                    
-                    # Select Year Range
-                    html.Div(
-                        children=[
-                            html.H3(
-                                "Select Year Range Slider", 
-                                style={
-                                    "fontSize": "24px",  # Smaller size for the subtitle
-                                    "fontWeight": "bold",  # Bold text for the subtitle
-                                    "marginBottom": "5px",  # Space below the subtitle
-                                    "textAlign": "left",  # Align to the left
-                                    "color": "#555555",  # Slightly lighter color for the subtitle
-                                }
-                            ),
-                            html.P(
-                                'The Select Year Range slider allows the choice of specific ranges of years between 2011 and 2024. To adjust to the desired range, drag the slider knobs, and relevant visualizations update accordingly to display data for the selected range.',
-                                style={
-                                    "fontSize": "18px",  
-                                    "fontWeight": "normal",  
-                                    "color": "#333333",  
-                                    "marginTop": "0px",  
-                                    "marginBottom": "10px",  # Space between the text and image
-                                    "lineHeight": "1.5",  
-                                    "textAlign": "justify",  
-                                }
-                            ),
-                            html.Div(
-                                children=[
-                                    html.Img(
-                                        src="/assets/year_slider.png", 
-                                        style={"width": "65%", "height": "auto", "margin": "0px"}
-                                    )
-                                ],
-                                style={"textAlign": "left"}  # Centers the image
-                            )
-                        ],
-                        style={"display": "flex", "flexDirection": "column", "alignItems": "flex-start"}
-                    ),
-                    
-                    # Select Parameter
-                    html.Div(
-                        children=[
-                            html.H3(
-                                "Select Parameter Dropdown", 
-                                style={
-                                    "fontSize": "24px",  # Smaller size for the subtitle
-                                    "fontWeight": "bold",  # Bold text for the subtitle
-                                    "marginBottom": "5px",  # Space below the subtitle
-                                    "textAlign": "left",  # Align to the left
-                                    "color": "#555555",  # Slightly lighter color for the subtitle
-                                }
-                            ),
-                            html.P(
-                                'The Select Parameter dropdown provides the choice between four climate parameters, and selection of a parameter is enabled through clicking on the corresponding radio button. The four available parameters are “Maximum Temperature”, “Mean Temperature”, “Minimum Temperature”, and “Accumulated Precipitation”.',
-                                style={
-                                    "fontSize": "18px",  
-                                    "fontWeight": "normal",  
-                                    "color": "#333333",  
-                                    "marginTop": "0px",  
-                                    "marginBottom": "10px",  # Space between the text and image
-                                    "lineHeight": "1.5",  
-                                    "textAlign": "justify",  
-                                }
-                            ),
-                            html.Div(
-                                children=[
-                                    html.Img(
-                                        src="/assets/select_parameter.png", 
-                                        style={"width": "40%", "height": "auto", "margin": "0px"}
-                                    )
-                                ],
-                                style={"textAlign": "left"}  # Centers the image
-                            )
-                        ],
-                        style={"display": "flex", "flexDirection": "column", "alignItems": "flex-start"}
-                    ),
-                    
-                    # Visualization mode
-                    html.Div(
-                        children=[
-                            html.H3(
-                                "Spatial Resolution Switch", 
-                                style={
-                                    "fontSize": "24px",  # Smaller size for the subtitle
-                                    "fontWeight": "bold",  # Bold text for the subtitle
-                                    "marginBottom": "5px",  # Space below the subtitle
-                                    "textAlign": "left",  # Align to the left
-                                    "color": "#555555",  # Slightly lighter color for the subtitle
-                                }
-                            ),
-                            html.P(
-                                'The Spatial Resolution Switch provides the choice between two spatial resolutions: “Municipalities” and “10x10km Grid”. The “Municipalities” view displays the data by municipalities and presents aggregated values for each municipality. The “10x10km Grid” view displays the data in 10x10 kilometer grid cells covering Denmark.',
-                                style={
-                                    "fontSize": "18px",  
-                                    "fontWeight": "normal",  
-                                    "color": "#333333",  
-                                    "marginTop": "0px",  
-                                    "marginBottom": "10px",  # Space between the text and image
-                                    "lineHeight": "1.5",  
-                                    "textAlign": "justify",  
-                                }
-                            ),
-                            html.Div(
-                                children=[
-                                    html.Img(
-                                        src="/assets/visualization_mode.png", 
-                                        style={"width": "40%", "height": "auto", "margin": "0px"}
-                                    )
-                                ],
-                                style={"textAlign": "left"}  # Centers the image
-                            )
-                        ],
-                        style={"display": "flex", "flexDirection": "column", "alignItems": "flex-start"}
-                    ),
-                    
-                    # Trend Map
-                    html.Div(
-                        children=[
-                            html.H3(
-                                "Choropleth Map", 
-                                style={
-                                    "fontSize": "24px",  # Smaller size for the subtitle
-                                    "fontWeight": "bold",  # Bold text for the subtitle
-                                    "marginBottom": "5px",  # Space below the subtitle
-                                    "textAlign": "left",  # Align to the left
-                                    "color": "#555555",  # Slightly lighter color for the subtitle
-                                }
-                            ),
-                            html.P(
-                                'The Choropleth Map displays yearly changes for the selected parameter based on the spatial resolution chosen in the visualization mode selector. Colors encode values, with darker and lighter shades indicating higher or lower yearly changes, respectively. The color scale on the right of the map provides a reference for interpreting these color gradients as well as hovering over the region to get exact values. Specific regions can be selected by clicking on the map with a maximum of 3 regions allowed and these are highlighted by a bold colored outline.',
-                                style={
-                                    "fontSize": "18px",
-                                    "fontWeight": "normal",  
-                                    "color": "#333333",  
-                                    "marginTop": "0px",  
-                                    "marginBottom": "10px",  # Space between the text and image
-                                    "lineHeight": "1.5",  
-                                    "textAlign": "justify",  
-                                }
-                            ),
-                            html.Div(
-                                children=[
-                                    html.Img(
-                                        src="/assets/trend_map.png", 
-                                        style={"width": "70%", "height": "auto", "margin": "0px"}
-                                    )
-                                ],
-                                style={"textAlign": "left"}  # Centers the image
-                            )
-                        ],
-                        style={"display": "flex", "flexDirection": "column", "alignItems": "flex-start"}
-                    ),
-                
-                    # Timeline Figure
-                    html.Div(
-                        children=[
-                            html.H3(
-                                "Temporal Line Chart", 
-                                style={
-                                    "fontSize": "24px",  # Smaller size for the subtitle
-                                    "fontWeight": "bold",  # Bold text for the subtitle
-                                    "marginBottom": "5px",  # Space below the subtitle
-                                    "textAlign": "left",  # Align to the left
-                                    "color": "#555555",  # Slightly lighter color for the subtitle
-                                }
-                            ),
-                            html.P(
-                                'The Temporal Line Chart shows aggregated actual values for the selected parameter across chosen months from 2011-2024 in Denmark. In the base form, aggregated values for Denmark are displayed with added trendlines for the full range (2011-2024) and selected year range (visible if it is not 2011-2024) both showing the general trend of the data. If regions are selected on the choropleth map, aggregated values for those regions are displayed alongside Denmark with trendlines disappearing. The regions are color coded to match the choropleth map.',
-                                style={
-                                    "fontSize": "18px",  
-                                    "fontWeight": "normal",  
-                                    "color": "#333333",  
-                                    "marginTop": "0px",  
-                                    "marginBottom": "10px",  # Space between the text and image
-                                    "lineHeight": "1.5",  
-                                    "textAlign": "justify",  
-                                }
-                            ),
-                            html.Div(
-                                children=[
-                                    html.Img(src="/assets/timeline_figure.png", style={"width": "50%", "height": "auto", "margin": "5px"}),
-                                    html.Img(src="/assets/timeline_figure_select.png", style={"width": "50%", "height": "auto", "margin": "5px"}),
-                                ],
-                                style={
-                                    "display": "flex",  # Arrange images side by side
-                                    "flexDirection": "row",
-                                    "justifyContent": "center",  # Center the images
-                                    "alignItems": "left",
-                                    "marginTop": "-5px",  # Add spacing above the image row
-                                }
-                            ),
-                        ],
-                        style={"display": "flex", "flexDirection": "column", "alignItems": "flex-start"}
-                    ),
-        
-                    # Overview Chart
-                    html.Div(
-                        children=[
-                            html.H3(
-                                "Comparative Overview Chart", 
-                                style={
-                                    "fontSize": "24px",  # Smaller size for the subtitle
-                                    "fontWeight": "bold",  # Bold text for the subtitle
-                                    "marginBottom": "5px",  # Space below the subtitle
-                                    "textAlign": "left",  # Align to the left
-                                    "color": "#555555",  # Slightly lighter color for the subtitle
-                                }
-                            ),
-                            html.P(
-                                'The Comparative Overview Chart displays monthly averages for all four parameters over two periods. Solid and dashed lines represent recent and historical values, respectively. Bars are sorted to have historical values left (light blue) and recent values right (color teal). Lines correspond to the left-hand y-axis, while bars correspond to the right-hand y-axis. If no regions are selected, average values for Denmark from 1981-2010 are compared to 2011-2024. If one or more regions are selected, historical (2011-2017) and recent (2018-2024) data is compared, taking averages over all selected regions. Colors are not related to other visualizations.',
-                                style={
-                                    "fontSize": "18px",  
-                                    "fontWeight": "normal",  
-                                    "color": "#333333",  
-                                    "marginTop": "0px",  
-                                    "marginBottom": "10px",  # Space between the text and image
-                                    "lineHeight": "1.5",  
-                                    "textAlign": "justify",  
-                                }
-                            ),
-                            html.Div(
-                                children=[
-                                    html.Img(
-                                        src="/assets/overview_chart.png", 
-                                        style={"width": "85%", "height": "auto", "margin": "0px"}
-                                    )
-                                ],
-                                style={"textAlign": "left"}  # Centers the image
-                            )
-                        ],
-                        style={"display": "flex", "flexDirection": "column", "alignItems": "flex-start"}
-                    ),
-        
-                    # Bar Chart
-                    html.Div(
-                        children=[
-                            html.H3(
-                                "Trend Bar Chart", 
-                                style={
-                                    "fontSize": "24px",  # Smaller size for the subtitle
-                                    "fontWeight": "bold",  # Bold text for the subtitle
-                                    "marginBottom": "5px",  # Space below the subtitle
-                                    "textAlign": "left",  # Align to the left
-                                    "color": "#555555",  # Slightly lighter color for the subtitle
-                                }
-                            ),
-                            html.P(
-                                'The Trend Bar Chart provides an overall summary of trends for all four parameters with each group of bars corresponding to one parameter. In the base form, only yearly changes for Denmark are shown, while region-specific changes are added as regions are selected on the choropleth map. The right-most group of bars corresponds to the right-hand y-axis, while the rest correspond to the left-hand y-axis. Regions are color coded as in the line chart and choropleth map.',
-                                style={
-                                    "fontSize": "18px",  
-                                    "fontWeight": "normal",  
-                                    "color": "#333333",  
-                                    "marginTop": "0px",  
-                                    "marginBottom": "10px",  # Space between the text and image
-                                    "lineHeight": "1.5",  
-                                    "textAlign": "justify",  
-                                }
-                            ),
-                            html.Div(
-                                children=[
-                                    html.Img(src="/assets/bar_chart.png", style={"width": "50%", "height": "auto", "margin": "5px", "marginBottom": "50px"}),
-                                    html.Img(src="/assets/bar_chart_select.png", style={"width": "50%", "height": "auto", "margin": "5px", "marginBottom": "50px"}),
-                                ],
-                                style={
-                                    "display": "flex",  # Arrange images side by side
-                                    "flexDirection": "row",
-                                    "justifyContent": "center",  # Center the images
-                                    "alignItems": "left",
-                                    "marginTop": "-5px",  # Add spacing above the image row
-                                }
-                            ),
-                        ],
-                        style={"display": "flex", "flexDirection": "column", "alignItems": "flex-start"}
-                    ),
-                    # Two images alongside each other example
-                    # html.Div(
-                    #     children=[
-                    #         html.Img(src="/assets/select_parameter.png", style={"width": "40%", "height": "auto", "margin": "5px"}),
-                    #         html.Img(src="/assets/visualization_mode.png", style={"width": "25%", "height": "auto", "margin": "5px"}),
-                    #     ],
-                    #     style={
-                    #         "display": "flex",  # Arrange images side by side
-                    #         "flexDirection": "row",
-                    #         "justifyContent": "center",  # Center the images
-                    #         "alignItems": "center",
-                    #         "marginTop": "20px",  # Add spacing above the image row
-                    #     }
-                    # ),
-                ]
-            ),
-        
-            # Title container with greyed-out background
-            html.Div(
-                html.H1(
+    [
+        html.Div(id="info-sheet", style={"position": "absolute"}),
+        html.Div([
+            html.A(
+                children=[html.Div(
                     "Denmark Climate Trend Dashboard",
                     style={
-                        "textAlign": "left",
                         "margin": "0",
+                        "fontSize": "xx-large",
+                        "fontWeight": "bold",
                         "color": "#333333",  # Dark text for contrast
                     }
-                ),
-                style={
-                    # Light grey background with opacity
-                    "backgroundColor": "rgba(220, 220, 220, 0.5)",
-                    "padding": "10px 20px",  # Padding inside the title container
-                    "borderRadius": "0px",   # No rounded corners
-                    "height": "auto",  # Ensure the background spans the full height of the viewport
-                    "width": "100%",  # Width wraps around the title text
-                    "margin": "0",  # Remove margin
-                    # Optional shadow for subtle elevation
-                    "boxShadow": "0 2px 5px rgba(0,0,0,0.2)",
-                    "marginBottom": "5px",  # Even smaller space below the title
-                    "display": "block"  # Ensures title container is inline-block, not stretching the entire width
-                }
+                )],
+                href="/"
             ),
-        
-            # Combined temp-wheel and parameter selection layout
+            # Hidden stores for selected data
+            dcc.Store(id="selected-months", data=[]),
+            dcc.Store(id="selected-regions", data=[]),
+            dcc.Store(id="selected_year", data=None),
+            dcc.Store(id="stored-selected-regions", data=[]),
+            
+            info_sheet,
             html.Div([
-                html.Div([
+                # All the use case buttons imported from use_cases.py
+                use_cases,
+                # Info button
+                html.Button(
+                    id="info-button",
+                    className="scale-on-hover",
+                    n_clicks=0,
+                    title="Click for information",  # Tooltip text on hover
+                    children=[
+                        html.Img(
+                            src="/assets/info_button.png",  # Path to the symbol image
+                            style={
+                                "width": "25px",
+                                "height": "25px",
+                            }
+                        ),
+                        html.Span(
+                            "Dashboard Guide",
+                            style={
+                                "fontSize": "20px",  # Font size
+                            }
+                        ),
+                    ]
+                )
+            ], style={"display": "flex", "flexDirection": "row", "gap": "10px"})
+        ], className="headerWrapper"),
+        html.Div([
+            html.Div([
                     html.Div([
-                        html.Label(
-                            "Select/Deselect Month(s):", 
-                            style={"fontSize": "18px", "fontWeight": "bold", "margin": "0px"}
-                        ),
-                        dcc.Graph(
-                            id="temp-wheel", 
-                            style={"width": "95%", "height": "200px", "margin": "0px 0"}, 
-                            config={"displayModeBar": False}
-                        ),
                         html.Div([
                             html.Label(
-                                "Select Year Range:", 
+                                "Select/Deselect Month(s):", 
                                 style={"fontSize": "18px", "fontWeight": "bold", "margin": "0px"}
                             ),
-                            dcc.RangeSlider(
-                                id="year-slider",
-                                min=int(data_grid["year"].min()),
-                                max=int(data_grid["year"].max()),
-                                step=1,
-                                marks={
-                                    int(year): {
-                                        'label': str(year), 
-                                        'style': {'transform': 'rotate(45deg)', 'white-space': 'nowrap'}
-                                    } for year in data_grid["year"].unique()
-                                },
-                                value=[2011, 2024],
-                                allowCross=True
-                            )
-                        ], style={"margin": "10px 0"}),
-                        html.Div(
-                            children=[
-                                # Left side: Existing parameter selection
-                                html.Div(
-                                    children=[
-                                        html.Label(
-                                            "Select Parameter:",
-                                            style={"fontSize": "18px", "fontWeight": "bold", "margin": "0px"}
-                                        ),
-                                        dcc.RadioItems(
-                                            id="parameter-dropdown",
-                                            options=[
-                                                {"label": "Max. Temp.", "value": "max_temp"},
-                                                {"label": "Mean Temp.", "value": "mean_temp"},
-                                                {"label": "Min. Temp.", "value": "min_temp"},
-                                                {"label": "Acc. Precip.", "value": "acc_precip"}
-                                            ],
-                                            value="mean_temp",
-                                            labelStyle={'display': 'block', 'fontSize': '18px', 'marginTop': "5px"}
-                                        )
-                                    ],
-                                    style={"flex": "1", "margin": "10px"}
+                            dcc.Graph(
+                                id="temp-wheel", 
+                                style={"width": "95%", "height": "200px", "margin": "0px 0"}, 
+                                config={"displayModeBar": False}
+                            ),
+                            html.Div([
+                                html.Label(
+                                    "Select Year Range:", 
+                                    style={"fontSize": "18px", "fontWeight": "bold", "margin": "0px"}
                                 ),
-                                # Right side: New subparameter selection with four buttons
-                                html.Div(
-                                    children=[
-                                        html.Label(
-                                            "Select Subpara:",
-                                            style={"fontSize": "18px", "fontWeight": "bold", "margin": "0px"}
-                                        ),
-                                        dcc.RadioItems(
-                                            id="parameter-dropdown2",
-                                            options=[
-                                                {"label": "Ice Days", "value": "ice_para"},
-                                                {"label": "Heat. Deg. Days", "value": "heat_para"},
-                                                {"label": "Summer Days", "value": "summer_para"},
-                                                {"label": "Extreme Rain Days", "value": "extrain_para"}
-                                            ],
-                                            value="heat_para",
-                                            labelStyle={'display': 'block', 'fontSize': '18px', 'marginTop': "5px"}
-                                        )
-                                    ],
-                                    style={"flex": "1", "margin": "10px", "display": "flex", "flexDirection": "column"}
+                                dcc.RangeSlider(
+                                    id="year-slider",
+                                    min=int(data_grid["year"].min()),
+                                    max=int(data_grid["year"].max()),
+                                    step=1,
+                                    marks={
+                                        int(year): {
+                                            'label': str(year), 
+                                            'style': {'transform': 'rotate(45deg)', 'white-space': 'nowrap'}
+                                        } for year in data_grid["year"].unique()
+                                    },
+                                    value=[2011, 2024],
+                                    allowCross=True
                                 )
-                            ],
-                            style={"display": "flex", "flexDirection": "row", "justifyContent": "space-between"}
-                        ),
-                        html.Label(
-                            "To select regions, click on map →", 
-                            style={"fontSize": "18px", "fontWeight": "bold", "margin": "0px"}
-                        ),
-                        html.Div(
-                            children=[
-                                # Reset Filters button (unchanged)
-                                html.A(
-                                    html.Button(
-                                        id="reset-button",
-                                        style={
-                                            "width": "150px",
-                                            "height": "35px",
-                                            "backgroundColor": "rgba(220, 220, 220, 1)",
-                                            "border": "2px solid rgba(220, 220, 220, 1)",
-                                            "borderRadius": "14px",
-                                            "display": "flex",
-                                            "alignItems": "center",
-                                            "justifyContent": "center",
-                                            "gap": "10px",
-                                            "cursor": "pointer",
-                                            "padding": "6px"
-                                        },
-                                        n_clicks=0,
-                                        title="Reset filters",
+                            ], style={"margin": "10px 0", "display": "none"}),
+                            html.Div(
+                                children=[
+                                    # Left side: Existing parameter selection
+                                    html.Div(
                                         children=[
-                                            html.Img(
-                                                src="/assets/reset.png",
-                                                style={"width": "25px", "height": "25px"}
+                                            html.Label(
+                                                "Select Parameter:",
+                                                style={"fontSize": "18px", "fontWeight": "bold", "margin": "0px"}
                                             ),
-                                            html.Span(
-                                                "Reset Filters",
-                                                style={
-                                                    "fontFamily": "Segoe UI, sans-serif",
-                                                    "color": "black",
-                                                    "fontSize": "16px",
-                                                    "fontWeight": "bold"
-                                                }
+                                            dcc.RadioItems(
+                                                id="parameter-dropdown",
+                                                options=[
+                                                    {"label": "Max. Temp.", "value": "max_temp"},
+                                                    {"label": "Mean Temp.", "value": "mean_temp"},
+                                                    {"label": "Min. Temp.", "value": "min_temp"},
+                                                    {"label": "Acc. Precip.", "value": "acc_precip"}
+                                                ],
+                                                value="mean_temp",
+                                                labelStyle={'display': 'block', 'fontSize': '18px', 'marginTop': "5px"}
                                             )
-                                        ]
+                                        ],
+                                        style={"flex": "1", "margin": "10px"}
                                     ),
-                                    href="/",
-                                    style={"textDecoration": "none", "margin": "10px 6px"}
-                                ),
-                                # Toggle switch container
-                                html.Div(
-                                    children=[
-                                        # Label that will update based on the toggle state
-                                        html.Div(
-                                            id="map-parameter-toggle-label",
-                                            children="Show main parameters on map",
-                                            style={"fontSize": "16px", "fontWeight": "bold", "marginRight": "10px"}
+                                    # Right side: New subparameter selection with four buttons
+                                    html.Div(
+                                        children=[
+                                            html.Label(
+                                                "Select Subpara:",
+                                                style={"fontSize": "18px", "fontWeight": "bold", "margin": "0px"}
+                                            ),
+                                            dcc.RadioItems(
+                                                id="parameter-dropdown2",
+                                                options=[
+                                                    {"label": "Ice Days", "value": "ice_para"},
+                                                    {"label": "Heat. Deg. Days", "value": "heat_para"},
+                                                    {"label": "Summer Days", "value": "summer_para"},
+                                                    {"label": "Extreme Rain Days", "value": "extrain_para"}
+                                                ],
+                                                value="heat_para",
+                                                labelStyle={'display': 'block', 'fontSize': '18px', 'marginTop': "5px"}
+                                            )
+                                        ],
+                                        style={"flex": "1", "margin": "10px", "display": "flex", "flexDirection": "column"}
+                                    )
+                                ],
+                                style={"display": "flex", "flexDirection": "row", "justifyContent": "space-between"}
+                            ),
+                            html.Label(
+                                "To select regions, click on map →", 
+                                style={"fontSize": "18px", "fontWeight": "bold", "margin": "0px"}
+                            ),
+                            html.Div(
+                                children=[
+                                    # Reset Filters button (unchanged)
+                                    html.A(
+                                        html.Button(
+                                            id="reset-button",
+                                            style={
+                                                "width": "150px",
+                                                "height": "35px",
+                                                "backgroundColor": "rgba(220, 220, 220, 1)",
+                                                "border": "2px solid rgba(220, 220, 220, 1)",
+                                                "borderRadius": "14px",
+                                                "display": "flex",
+                                                "alignItems": "center",
+                                                "justifyContent": "center",
+                                                "gap": "10px",
+                                                "cursor": "pointer",
+                                                "padding": "6px"
+                                            },
+                                            n_clicks=0,
+                                            title="Reset filters",
+                                            children=[
+                                                html.Img(
+                                                    src="/assets/reset.png",
+                                                    style={"width": "25px", "height": "25px"}
+                                                ),
+                                                html.Span(
+                                                    "Reset Filters",
+                                                    style={
+                                                        "fontFamily": "Segoe UI, sans-serif",
+                                                        "color": "black",
+                                                        "fontSize": "16px",
+                                                        "fontWeight": "bold"
+                                                    }
+                                                )
+                                            ]
                                         ),
-                                        # The toggle switch
-                                        daq.BooleanSwitch(
-                                            id="map-parameter-toggle",
-                                            on=False,  # Set default state here
-                                            color="purple",
-                                            style={"verticalAlign": "middle"}
-                                        )
-                                    ],
-                                    style={"display": "flex", "alignItems": "center"}
-                                )
-                            ],
-                            style={"display": "flex", "alignItems": "center"}
-                        )
+                                        href="/",
+                                        style={"textDecoration": "none", "margin": "10px 6px"}
+                                    ),
+                                    # Toggle switch container
+                                    html.Div(
+                                        children=[
+                                            # Label that will update based on the toggle state
+                                            html.Div(
+                                                id="map-parameter-toggle-label",
+                                                children="Show main parameters on map",
+                                                style={"fontSize": "16px", "fontWeight": "bold", "marginRight": "10px"}
+                                            ),
+                                            # The toggle switch
+                                            daq.BooleanSwitch(
+                                                id="map-parameter-toggle",
+                                                on=False,  # Set default state here
+                                                color="purple",
+                                                style={"verticalAlign": "middle"}
+                                            )
+                                        ],
+                                        style={"display": "flex", "alignItems": "center"}
+                                    )
+                                ],
+                                style={"display": "flex", "alignItems": "center"}
+                            )
 
+                        ], style={
+                            "display": "flex",
+                            "flexDirection": "column",
+                            "width": "100%",
+                            "boxSizing": "border-box"
+                        }),
+                        html.Button("Reset Zoom", id="reset-zoom", n_clicks=0),
                     ], style={
-                        "display": "flex",
-                        "flexDirection": "column",
                         "width": "100%",
-                        "boxSizing": "border-box"
+                        "height": "100%",
+                        "display": "inline-block",
+                        "verticalAlign": "top"
                     })
-                ], style={
-                    "width": "20%",
-                    "backgroundColor": "rgba(220, 220, 220, 0.5)",
-                    "padding": "10px",
-                    "margin": "20px",
-                    "maxHeight": "550px",
-                    "display": "inline-block",
-                    "verticalAlign": "top"
-                }),
-                # Trend map with visualization mode layered on top
-                html.Div([
-                    dcc.Graph(id="trend-map", style={"width": "100%", "height": "600px", "position": "relative", "z-index": "1"}, config={"displayModeBar": False},),
+            ], className="menuWrapper"),
+            html.Div([
+                dcc.Graph(id="trend-map", style={"width": "100%", "height": "100%", "position": "relative", "z-index": "1"}, config={"displayModeBar": False},),
                     html.Div([
                         html.Label("Spatial Resolution:", style={"fontSize": "18px", "fontWeight": "bold", "marginBottom": "5px"}),
                         dcc.RadioItems(
@@ -1114,18 +277,14 @@ app.layout = html.Div(
                         "border-radius": "5px",
                         "box-shadow": "0 2px 5px rgba(0,0,0,0.2)",
                     })
-                ], style={
-                    "position": "relative", 
-                    "width": "45%", 
-                    "display": "inline-block", 
-                    "verticalAlign": "top", 
-                    "margin": "0px", 
-                    "padding": "0px"}),
-                
+            ], className="mapWrapper"),
+        ], className="leftColumn"),
+        html.Div(
+        [
             html.Div([
                 dcc.Graph(
                     id="timeline",
-                    style={"width": "100%", "height": "600px", "margin": "0px"},
+                    style={"width": "100%", "height": "100%", "margin": "0px"},
                     config={"displayModeBar": False}
                 ),
                 html.Div(
@@ -1137,126 +296,39 @@ app.layout = html.Div(
                     ),
                     style={
                         "position": "absolute",
-                        "top": "10px",
-                        "left": "10px",
+                        "top": "5px",
+                        "right": "5px",
                         "backgroundColor": "rgba(255,255,255,0.7)",
                         "padding": "5px",
                         "borderRadius": "5px",
                         "zIndex": "3"
                     }
                 )
-            ], style={"position": "relative", "display": "inline-block", "width": "35%"}),
-                
-            ], style={
-                "display": "flex",
-                "padding": "0",    # Remove padding from the parent container
-                "margin": "0",     # Remove margin from the parent container
-                #"height": "100vh",  # Make the container fill the entire viewport height
-                "justifyContent": "center"
-            }),
-        
-            # Hidden stores for selected data
-            dcc.Store(id="selected-months", data=[]),
-            dcc.Store(id="selected-regions", data=[]),
-            dcc.Store(id="selected_year", data=None),
-            dcc.Store(id="stored-selected-regions", data=[]),
-            
-            html.Button("Reset Zoom", id="reset-zoom", n_clicks=0),
-        
+            ], className="lineChartWrapper"),
             html.Div([
-                html.Div([
-                    dcc.Graph(
-                        id="overview-chart",
-                        style={"width": "65%", "display": "inline-block", "height": "500px", "margin": "0px"},
-                        config={"displayModeBar": False},
-                    ),
-                    html.Div([
-                        # Container for label + dropdown (aligned horizontally)
-                        html.Div(
-                            [
-                                html.Label(
-                                    "Point-of-view:",
-                                    style={
-                                        "fontSize": "18px",
-                                        "fontWeight": "bold",
-                                        "margin": "0px",
-                                        "marginRight": "10px",  # Add spacing between label and dropdown
-                                    }
-                                ),
-                            ],
-                            style={
-                                "display": "flex",
-                                "alignItems": "center",  # Vertically align items
-                                "marginBottom": "5px",
-                            }
-                        ),
-                        html.Div(
-                            dcc.Checklist(
-                                id="barchart-toggle",
-                                options=[{"label": "Show Trendlines", "value": "show"}],
-                                value=["show"],
-                                labelStyle={"fontSize": "16px", "fontWeight": "bold"}
-                            ),
-                        ),                        
-                        dcc.Graph(
-                            id="bar_chart",
-                            style={"width": "105%", "height": "440px"},
-                            config={"displayModeBar": False},
-                        ),
-                        html.Div(
-                            [
-                                html.Img(
-                                    src="/assets/DMI_kilde.png",
-                                    style={"width": "45px", "height": "auto", "marginRight": "10px"}
-                                ),
-                                html.Div([
-                                    html.Span(
-                                        "Data source: ",
-                                        style={"fontSize": "16px", "color": "black", "fontWeight": "bold"}
-                                    ),
-                                    html.A(
-                                        "DMI Frie Data",
-                                        href="https://www.dmi.dk/frie-data",
-                                        style={"fontSize": "16px", "color": "blue", "textDecoration": "none"}
-                                    )
-                                ])
-                            ],
-                            style={
-                                "display": "flex",
-                                "alignItems": "center",
-                                "justifyContent": "flex-end",
-                                "marginTop": "-50px",  # Add some spacing above the DMI source
-                                "width": "100%",  # Ensure it spans the full width of its container
-                                "marginRight": "0px",  # Move left
-                                "position": "absolute",  # Absolute positioning
-                                "right": "30px",  # Move further left (adjust this as needed)
-                                "zIndex": "100"  # Ensure it stays above bar charts
-                            }
-                        )
-                    ], style={"width": "35%", "display": "inline-block", "height": "auto", "margin": "0px", "overflow": "hidden"})
-                ], style={
-                    "display": "flex",
-                    "justifyContent": "space-between",
-                    "margin": "0",
-                    "padding": "0",
-                    "width": "100%",
-                    "overflow": "hidden"
-                })
-            ]),
-        ])
+            ], className="timeSlideWrapper"),
+            html.Div([
+                dcc.Graph(
+                    id="bar_chart",
+                    style={"width": "105%", "height": "100%"},
+                    config={"displayModeBar": False},
+                ),
+                dcc.Checklist(
+                    id="barchart-toggle",
+                    options=[{"label": "Show Trendlines", "value": "show"}],
+                    value=["show"],
+                    labelStyle={"fontSize": "16px", "fontWeight": "bold"},
+                    style={"position": "absolute", "top": "5px", "right": "5px"}
+                ),
+            ], className="barChartWrapper"),
+        ]
+        , className="rightColumn"),
     ],
-    style={
-        "overflowX": "hidden",  # Prevent horizontal scrolling
-        "margin": "0",         # Remove unnecessary margins
-        "padding": "0",        # Remove unnecessary padding
-        "boxSizing": "border-box",  # Ensure all elements respect the container width
-        "fontFamily": "Segoe UI, sans-serif"
-    }
+    className="main"
 )
 
 # Colors for municipalities
 COLOR_PALETTE = ["gold", "coral", "mediumpurple"]
-COLOR_PALETTE2 = ["gold", "coral", "mediumpurple"]
 
 @app.callback(
     Output("map-parameter-toggle-label", "children"),
@@ -1878,7 +950,6 @@ def update_timeline(parameter, selected_years, selected_months, selected_regions
             zerolinecolor="lightgrey"
         ),
         margin={"r": 40, "t": 40, "l": 40, "b": 40},
-        height=600,
         showlegend=True,
         legend=dict(
             orientation="h",
@@ -2479,254 +1550,108 @@ def update_selected_year(clickData, reset_n, selected_year):
             return clickData["points"][0]["x"]
     return selected_year
 
+
+
 #### USE CASES ####
-# FARMER
-@app.callback(
-    [Output("selected-months", "data", allow_duplicate=True),
-     Output("parameter-dropdown", "value"),
-     Output("parameter-dropdown2", "value"),
-     Output("visualization-mode", "value", allow_duplicate=True),
-     Output("stored-selected-regions", "data", allow_duplicate=True)],
-    Input("farmer-button", "n_clicks"),
-    prevent_initial_call=True
-)
-def apply_preset_farmer(n_clicks):
-    if n_clicks:
-        # Set months to May, June, July, August
-        preset_months = [5, 6, 7, 8]
-        # Set the main parameter to accumulated precipitation
-        preset_parameter = "acc_precip"
-        # Set the sub parameter to extreme rain days
-        preset_subparameter = "extrain_para"
-        # Ensure visualization-mode is municipality grid
-        preset_mode = "municipality"
-        # Set the selected regions (Aabenraa, Tønder)
-        preset_regions = ["0580", "0550"]
-        return preset_months, preset_parameter, preset_subparameter, preset_mode, preset_regions
-    return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
+preset_data = {
+    "usecase-garden-filter-button": {
+        "months": [2, 3, 4, 5],
+        "parameter": "min_temp",
+        "subparameter": "ice_para",
+        "mode": "municipality",
+        "regions": ["0253"]
+    },
+    "usecase-energy-filter-button": {
+        "months": [9, 10, 11, 12],
+        "parameter": "min_temp",
+        "subparameter": "heat_para",
+        "mode": "grid",
+        "regions": ["10km_622_56"]
+    },
+    "usecase-farmer-filter-button": {
+        "months": [5, 6, 7, 8],
+        "parameter": "acc_precip",
+        "subparameter": "extrain_para",
+        "mode": "municipality",
+        "regions": ["0580", "0550"]
+    },
+    "usecase-summerhouse-filter-button": {
+        "months": [6, 7, 8],
+        "parameter": "mean_temp",
+        "subparameter": "summer_para",
+        "mode": "municipality",
+        "regions": ["0813", "0376", "0400"]
+    }
+}
 
-# SUMMERHOUSE
-@app.callback(
-    [Output("selected-months", "data", allow_duplicate=True),
-     Output("parameter-dropdown", "value", allow_duplicate=True),
-     Output("parameter-dropdown2", "value", allow_duplicate=True),
-     Output("visualization-mode", "value", allow_duplicate=True),
-     Output("stored-selected-regions", "data", allow_duplicate=True)],
-    Input("summerhouse-button", "n_clicks"),
-    prevent_initial_call=True
-)
-def apply_preset_summerhouse(n_clicks):
-    if n_clicks:
-        # Set months to June, July, August
-        preset_months = [6, 7, 8]
-        # Set the main parameter to mean temperature
-        preset_parameter = "mean_temp"
-        # Set the sub parameter to summer days
-        preset_subparameter = "summer_para"
-        # Ensure visualization-mode is municipality grid
-        preset_mode = "municipality"
-        # Set the selected regions (Frederikshavn, Guldborgsund, Bornholm)
-        preset_regions = ["0813", "0376", "0400"]
-        return preset_months, preset_parameter, preset_subparameter, preset_mode, preset_regions
-    return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
-
-# GARDEN
 @app.callback(
     [Output("selected-months", "data", allow_duplicate=True),
      Output("parameter-dropdown", "value", allow_duplicate=True),
      Output("parameter-dropdown2", "value", allow_duplicate=True),
      Output("visualization-mode", "value", allow_duplicate=True),
      Output("stored-selected-regions", "data", allow_duplicate=True)],
-    Input("garden-button", "n_clicks"),
+    [Input(button_id, "n_clicks") for button_id in preset_data.keys()],
     prevent_initial_call=True
 )
-def apply_preset_garden(n_clicks):
-    if n_clicks:
-        # Set months to Februrary, March, April, May
-        preset_months = [2, 3, 4, 5]
-        # Set the main parameter to minimum temperature
-        preset_parameter = "min_temp"
-        # Set the sub parameter to ice days
-        preset_subparameter = "ice_para"
-        # Ensure visualization-mode is municipality grid
-        preset_mode = "municipality"
-        # Set the selected regions (Greve)
-        preset_regions = ["0253"]
-        return preset_months, preset_parameter, preset_subparameter, preset_mode, preset_regions
+def apply_preset(*args):
+    ctx = callback_context
+    if not ctx.triggered:
+        return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
+
+    # Identify which button was clicked
+    triggered_id = ctx.triggered[0]['prop_id'].split('.')[0]
+
+    # Fetch the corresponding preset data
+    if triggered_id in preset_data:
+        preset = preset_data[triggered_id]
+        return preset["months"], preset["parameter"], preset["subparameter"], preset["mode"], preset["regions"]
+
     return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
-# ENERGY EFFICIENCY
-@app.callback(
-    [Output("selected-months", "data", allow_duplicate=True),
-     Output("parameter-dropdown", "value", allow_duplicate=True),
-     Output("parameter-dropdown2", "value", allow_duplicate=True),
-     Output("visualization-mode", "value", allow_duplicate=True),
-     Output("stored-selected-regions", "data", allow_duplicate=True)],
-    Input("energy-button", "n_clicks"),
-    prevent_initial_call=True
-)
-def apply_preset_energy(n_clicks):
-    if n_clicks:
-        # Set months to September, October, November, December
-        preset_months = [9, 10, 11, 12]
-        # Set the main parameter to minimum temperature
-        preset_parameter = "min_temp"
-        # Set the sub parameter to heating degree days
-        preset_subparameter = "heat_para"
-        # Ensure visualization-mode is 10x10 grid
-        preset_mode = "grid"
-        # Set the selected regions (Aarhus, 0751) vil gerne rette til 10km_622_56, trend fra, sub på map
-        preset_regions = ["10km_622_56"]
-        return preset_months, preset_parameter, preset_subparameter, preset_mode, preset_regions
-    return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
-# Callback to toggle the Use Case (Summerhouse) info sheet
-@app.callback(
-    Output("usecase-sheet-summerhouse", "style"),
-    [Input("usecase-button-summerhouse", "n_clicks"), Input("close-usecase-summerhouse", "n_clicks")],
-    prevent_initial_call=True
-)
-def toggle_usecase_summerhouse_sheet(usecase_summerhouse_clicks, close_clicks):
-    ctx = callback_context
-    triggered_id = ctx.triggered[0]['prop_id'].split('.')[0]
-    if triggered_id == "usecase-button-summerhouse":
-        return {
-            "position": "fixed",
-            "top": "0",  # Drop down from the top
-            "left": "50%",
-            "transform": "translateX(-50%)",
-            "width": "50%",
-            "backgroundColor": "white",
-            "boxShadow": "0 2px 10px rgba(0,0,0,0.3)",
-            "padding": "20px",
-            "zIndex": "5",
-            "transition": "top 0.3s ease"
-        }
-    elif triggered_id == "close-usecase-summerhouse":
-        return {
-            "position": "fixed",
-            "top": "-100%",  # Hide above the screen
-            "left": "50%",
-            "transform": "translateX(-50%)",
-            "width": "50%",
-            "backgroundColor": "white",
-            "boxShadow": "0 2px 10px rgba(0,0,0,0.3)",
-            "padding": "20px",
-            "zIndex": "5",
-            "transition": "top 0.3s ease"
-        }
-    return dash.no_update
+# Extract IDs from use_cases_data dynamically
+usecase_ids = [case["id"] for case in use_cases_data]
 
-# Callback to toggle the Use Case (Farmer) info sheet
 @app.callback(
-    Output("usecase-sheet-farmer", "style"),
-    [Input("usecase-button-farmer", "n_clicks"), Input("close-usecase-farmer", "n_clicks")],
+    [Output(f"{usecase_id}-sheet", "style") for usecase_id in usecase_ids],
+    sum([[Input(f"{usecase_id}-button", "n_clicks"), Input(f"{usecase_id}-close", "n_clicks")] for usecase_id in usecase_ids], []),
     prevent_initial_call=True
 )
-def toggle_usecase_farmer_sheet(usecase_farmer_clicks, close_clicks):
+def toggle_usecase_sheets(*args):
     ctx = callback_context
-    triggered_id = ctx.triggered[0]['prop_id'].split('.')[0]
-    if triggered_id == "usecase-button-farmer":
-        return {
-            "position": "fixed",
-            "top": "0",  # Drop down from the top
-            "left": "50%",
-            "transform": "translateX(-50%)",
-            "width": "50%",
-            "backgroundColor": "white",
-            "boxShadow": "0 2px 10px rgba(0,0,0,0.3)",
-            "padding": "20px",
-            "zIndex": "5",
-            "transition": "top 0.3s ease"
-        }
-    elif triggered_id == "close-usecase-farmer":
-        return {
-            "position": "fixed",
-            "top": "-100%",  # Hide above the screen
-            "left": "50%",
-            "transform": "translateX(-50%)",
-            "width": "50%",
-            "backgroundColor": "white",
-            "boxShadow": "0 2px 10px rgba(0,0,0,0.3)",
-            "padding": "20px",
-            "zIndex": "5",
-            "transition": "top 0.3s ease"
-        }
-    return dash.no_update
+    if not ctx.triggered:
+        return [dash.no_update] * len(usecase_ids)
 
-# Callback to toggle the Use Case (Garden) info sheet
-@app.callback(
-    Output("usecase-sheet-garden", "style"),
-    [Input("usecase-button-garden", "n_clicks"), Input("close-usecase-garden", "n_clicks")],
-    prevent_initial_call=True
-)
-def toggle_usecase_garden_sheet(usecase_garden_clicks, close_clicks):
-    ctx = callback_context
+    # Identify which button was clicked
     triggered_id = ctx.triggered[0]['prop_id'].split('.')[0]
-    if triggered_id == "usecase-button-garden":
-        return {
-            "position": "fixed",
-            "top": "0",  # Drop down from the top
-            "left": "50%",
-            "transform": "translateX(-50%)",
-            "width": "50%",
-            "backgroundColor": "white",
-            "boxShadow": "0 2px 10px rgba(0,0,0,0.3)",
-            "padding": "20px",
-            "zIndex": "5",
-            "transition": "top 0.3s ease"
-        }
-    elif triggered_id == "close-usecase-garden":
-        return {
-            "position": "fixed",
-            "top": "-100%",  # Hide above the screen
-            "left": "50%",
-            "transform": "translateX(-50%)",
-            "width": "50%",
-            "backgroundColor": "white",
-            "boxShadow": "0 2px 10px rgba(0,0,0,0.3)",
-            "padding": "20px",
-            "zIndex": "5",
-            "transition": "top 0.3s ease"
-        }
-    return dash.no_update
 
-# Callback to toggle the Use Case info sheet
-@app.callback(
-    Output("usecase-sheet-energy", "style"),
-    [Input("usecase-button-energy", "n_clicks"), Input("close-usecase-energy", "n_clicks")],
-    prevent_initial_call=True
-)
-def toggle_usecase_energy_sheet(usecase_energy_clicks, close_clicks):
-    ctx = callback_context
-    triggered_id = ctx.triggered[0]['prop_id'].split('.')[0]
-    if triggered_id == "usecase-button-energy":
-        return {
-            "position": "fixed",
-            "top": "0",  # Drop down from the top
-            "left": "50%",
-            "transform": "translateX(-50%)",
-            "width": "50%",
-            "backgroundColor": "white",
-            "boxShadow": "0 2px 10px rgba(0,0,0,0.3)",
-            "padding": "20px",
-            "zIndex": "5",
-            "transition": "top 0.3s ease"
-        }
-    elif triggered_id == "close-usecase-energy":
-        return {
-            "position": "fixed",
-            "top": "-100%",  # Hide above the screen
-            "left": "50%",
-            "transform": "translateX(-50%)",
-            "width": "50%",
-            "backgroundColor": "white",
-            "boxShadow": "0 2px 10px rgba(0,0,0,0.3)",
-            "padding": "20px",
-            "zIndex": "5",
-            "transition": "top 0.3s ease"
-        }
-    return dash.no_update
+    # Generate a default hidden state for all sheets
+    hidden_state = {
+        "position": "fixed",
+        "top": "-100%",  # Hide above the screen
+        "left": "50%",
+        "transform": "translateX(-50%)",
+        "width": "50%",
+        "backgroundColor": "white",
+        "boxShadow": "0 2px 10px rgba(0,0,0,0.3)",
+        "padding": "20px",
+        "zIndex": "5",
+        "transition": "top 0.3s ease"
+    }
+
+    # Generate an open state (shown) for the triggered sheet
+    open_state = hidden_state.copy()
+    open_state["top"] = "0"  # Drop down from the top
+
+    # Determine which sheet to show/hide
+    output_states = []
+    for usecase_id in usecase_ids:
+        if triggered_id == f"{usecase_id}-button":
+            output_states.append(open_state)  # Show this sheet
+        else:
+            output_states.append(hidden_state)  # Hide all others
+
+    return output_states
 
 if __name__ == "__main__":
     app.run_server(debug=True, port=80, host='0.0.0.0')     

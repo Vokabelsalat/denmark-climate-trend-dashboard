@@ -17,20 +17,38 @@ body {
     box-sizing: border-box; /* Ensure all elements respect the container width */
     font-family: "Segoe UI", sans-serif;
     display: grid;
-    grid-template-rows: auto minmax(0, 1fr) auto minmax(0, 1.5fr);
-    grid-template-columns: 40% 60%;
+    grid-template-columns: minmax(0, 40%) minmax(0, 60%);
+    grid-template-rows: auto 1fr;
+    overflow: hidden;
     box-sizing: border-box;
+}
+
+.leftColumn {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+}
+
+.rightColumn {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) minmax(auto, auto) minmax(0, 1fr); 
+    overflow: hidden; /* Prevent infinite growth */
+}
+
+.rightColumn > * {
+    min-height: 0;
+    overflow: hidden; /* Ensures content does not cause infinite expansion */
 }
 
 .headerWrapper {
     height: 50px;
-    grid-column: 1 / span 2;
     display: flex;
     flex-direction: row;
     background-color: rgba(220, 220, 220, 0.5);
     justify-content: space-between;
     align-items: center;
     padding: 10px 20px;
+    grid-column: 1 / span 2; 
+    grid-row: 1;
 }
 
 .headerWrapper > a {
@@ -46,35 +64,29 @@ body {
 .mapWrapper {
     width: 100%;
     height: 100%;
-    grid-column: 1;
-    grid-row: 3 / span 4;
+    position: relative;
 }
 
 .menuWrapper {
     width: 100%;
     height: 100%;
-    grid-column: 1;
-    grid-row: 2;
+    padding: 10px;
 }
 
 .lineChartWrapper {
     width: 100%;
     height: 100%;
-    grid-column: 2;
-    grid-row: 2;
+    position: relative;
 }
 
 .timeSlideWrapper {
     width: 100%;
-    grid-column: 2;
-    grid-row: 3;
 }
 
 .barChartWrapper {
     width: 100%;
     height: 100%;
-    grid-column: 2;
-    grid-row: 4;
+    position: relative;
 }
 
 #info-button {
@@ -83,14 +95,87 @@ body {
     border-radius: 18px; /* Rounded corners */
     display: flex; /* Flexbox for alignment */
     align-items: center; /* Center content vertically */
-    /* justify-content: left; */ /* Center content horizontally (commented out in original) */
     gap: 14px; /* Space between symbol and text */
     cursor: pointer;
-    transition: all 0.1s ease; /* Smooth transition for hover effect */
     padding: 10px; /* Add padding for better spacing */
     font-family: inherit;
 }
 
-#info-button:hover {
-    transform: scale(1.05);
+.scale-on-hover:hover {
+    transition: all 0.2s ease; /* Smooth transition for hover effect */
+    transform: scale(1.055);
+}
+
+.usecase-p {
+    font-size: 18px;
+    color: #333333;
+    margin-top: 10px;
+    line-height: 1.5;
+    text-align: left;
+}
+
+.filter-button {
+    width: 110px;  /* Adjust width to accommodate text */
+    height: 45px;
+    background-color: rgba(226, 182, 247, 0.8);  /* Light purple background */
+    border: 2px solid rgba(206, 159, 229, 0.8);  /* Slightly darker purple border */
+    border-radius: 18px;  /* Rounded corners */
+    display: flex;  /* Flexbox for alignment */
+    align-items: center;  /* Center content vertically */
+    justify-content: center;  
+    gap: 14px;  /* Space between symbol and text */
+    cursor: pointer;
+    transition: all 0.1s ease;  /* Smooth transition for hover effect */
+    padding: 10px;  /* Add padding for better spacing */
+    margin-right: 10px;  /* Space between buttons */
+    font-weight: bold;
+}
+
+.usecase-sheet {
+    position: fixed;
+    top: -100%;  /* Initially hidden above the screen */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 50%;
+    background-color: white;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    padding: 20px;
+    z-index: 5;
+    transition: top 0.3s ease;
+}
+
+.usecase-button {
+    background-color: rgba(213, 227, 211, 1);
+    border: 2px solid rgba(191, 227, 186, 1);
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: all 0.1s ease;
+    height: 100%;
+    padding: 0 14px;
+}
+
+.usecase-wrapepr {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+}
+
+.subtitle {
+    font-size: 24px;  /* Smaller size for the subtitle */
+    font-weight: bold;  /* Bold text for the subtitle */
+    margin-bottom: 5px;  /* Space below the subtitle */
+    text-align: left;  /* Align to the left */
+    color: #555555;  /* Slightly lighter color for the subtitle */
+}
+
+.paragraph-text {
+    font-size: 18px;
+    font-weight: normal;
+    color: #333333;
+    margin-top: 0px;
+    line-height: 1.5;
+    text-align: justify;
 }
