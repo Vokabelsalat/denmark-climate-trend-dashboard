@@ -45,7 +45,6 @@ app = dash.Dash(__name__)
 
 app.layout = html.Div(
     [
-        html.Div(id="info-sheet", style={"position": "absolute"}),
         html.Div([
             html.A(
                 children=[html.Div(
@@ -1654,4 +1653,4 @@ def toggle_usecase_sheets(*args):
     return output_states
 
 if __name__ == "__main__":
-    app.run_server(debug=True, port=80, host='0.0.0.0')     
+    app.run_server(debug=False, port=80, host='0.0.0.0')     
