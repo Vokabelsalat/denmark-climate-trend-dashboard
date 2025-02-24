@@ -557,10 +557,13 @@ def update_trend_map(mode, parameter_main, parameter_sub, selected_years, select
         "acc_precip": "Accumulated Precipitation (mm)",
         "max_temp": "Maximum Temperature (°C)",
         "min_temp": "Minimum Temperature (°C)",
+        "mean_wind": "Mean Wind Speed (m/s)",
         "ice_para": "Ice Days",
         "heat_para": "Heating Degree Days",
         "summer_para": "Summer days",
-        "extrain_para": "Extreme Rain Days"
+        "extrain_para": "Extreme Rain Days",
+        "maxwind_para": "Max. Wind Speed 10 min. (m/s)",
+        "brightsun_para": "Bright Sunshine (hr)"
     }
 
     if toggle_state:
@@ -768,240 +771,422 @@ def update_trend_map(mode, parameter_main, parameter_sub, selected_years, select
     
         return trend_map
 
-
 @app.callback(
     Output("timeline", "figure"),
     [Input("parameter-dropdown", "value"),
-     Input("year-slider", "value"),
      Input("selected-months", "data"),
      Input("selected-regions", "data"),
      Input("visualization-mode", "value"),
-     Input("trendline-toggle", "value")]
+     Input("trendline-toggle", "value"),
+     Input("selected_year", "data")]
 )
-def update_timeline(parameter, selected_years, selected_months, selected_regions, visualization_mode, trendline_toggle):
-    selected_year_1, selected_year_2 = sorted(selected_years)
+def update_timeline(parameter, selected_months, selected_regions, mode, trendline_toggle, selected_year):
+    # Set a top margin to move the chart a bit up (and remove an overall title)
+    layout_margins = dict(t=50)
     
+    print(selected_year)
+    
+    # Define parameters for the bar charts
     # Mapping for display names and units
-    PARAMETER_LABELS = {
+    PARAMETERS = {
         "mean_temp": "Mean Temperature (°C)",
         "acc_precip": "Accumulated Precipitation (mm)",
         "max_temp": "Maximum Temperature (°C)",
-        "min_temp": "Minimum Temperature (°C)"
+        "min_temp": "Minimum Temperature (°C)",
+        "mean_wind": "Mean Wind Speed (m/s)"
     }
-    parameter_name = PARAMETER_LABELS.get(parameter, parameter)
-    min_value = data_grid[parameter].min()
-    max_value = data_grid[parameter].max()
+    parameter_name = PARAMETERS.get(parameter, parameter)
     
-    # Filter Denmark data for the full 2011-2024 period (using selected months)
-    denmark_filtered_data = data_grid[
-        (data_grid["year"].between(2011, 2024)) &
-        (data_grid["month"].isin(selected_months))
-    ]
-    trend_unit = "mm" if parameter == "acc_precip" else "°C"
-    denmark_average_data = denmark_filtered_data.groupby("year")[parameter].mean().reset_index()
-    
-    timeline = go.Figure()
-    
-    min_value_precip = denmark_filtered_data["acc_precip"].min()
-    max_value_precip = denmark_filtered_data["acc_precip"].max()
-    
-    # Add Denmark's actual data trace
-    timeline.add_trace(go.Scatter(
-        x=denmark_average_data["year"],
-        y=denmark_average_data[parameter],
-        mode="lines+markers",
-        name="Denmark",
-        line=dict(color="forestgreen"),
-        marker=dict(size=8),
-        hovertemplate=(
-            "Location: Denmark<br>Value: %{y:.2f} " + trend_unit +
-            "<br>Year: %{x}<extra></extra>"
-        ),
-        legendgroup="Denmark",  # Assign a group
-    ))
-    
-    # Determine if trendlines are toggled on
-    show_trendlines = 'show' in trendline_toggle
-    # If regions are selected, hide trendline legends
-    trendline_show_legend = False if selected_regions else True
-    
-    # Add Denmark full-range trendline (always in forestgreen with dash "dot")
-    if show_trendlines:
-        full_year_range = pd.Series(range(2011, 2025))
-        trend_slope, trend_intercept = np.polyfit(
-            denmark_average_data["year"], denmark_average_data[parameter], 1
+    # If Denmark / Region POV
+    if len(selected_regions) <= 1:
+        if len(selected_regions) == 0:
+            # Save data (mode)            
+            filtered_data = data_grid[
+                (data_grid["year"].between(2011, 2024))
+            ]
+            
+        else:            
+            # Save data (mode)
+            if mode == "grid":
+                filtered_data = data_grid[
+                    (data_grid["cell_id"].isin(selected_regions)) &
+                    (data_grid["year"].between(2011, 2024))
+                ]
+            else:
+                filtered_data = data_municipality[
+                    (data_municipality["cell_id"].isin(selected_regions)) &
+                    (data_municipality["year"].between(2011, 2024))
+                ]
+        
+        benchmark_data = filtered_data.groupby("month")[list(PARAMETERS.keys())].mean().reset_index()
+        
+        # Save data (distribution)
+        if selected_year == None:
+            filtered_data = filtered_data[(filtered_data["month"].isin(selected_months))]
+            yearly_data = filtered_data.groupby("year")[list(PARAMETERS.keys())].mean().reset_index()
+            line_data = yearly_data
+            line_dis = "year"
+        else:
+            filtered_data = filtered_data[filtered_data["year"] == selected_year]
+            monthly_data = filtered_data.groupby("month")[list(PARAMETERS.keys())].mean().reset_index()
+            line_data = monthly_data
+            line_dis = "month"
+                    
+        # Create figure layout
+        fig = go.Figure()
+
+        # Create lines and bar      
+        fig.add_trace(go.Scatter(
+            x=line_data[line_dis],
+            y=line_data["max_temp"],
+            mode="lines+markers",
+            name="Max. Temp.",
+            line=dict(color="firebrick", width=3),
+            yaxis="y1",
+            hovertemplate="Value: %{y:.2f} °C<br>Parameter: Max Temp<extra></extra>"
+        ))
+        fig.add_trace(go.Scatter(
+            x=line_data[line_dis],
+            y=line_data["mean_temp"],
+            mode="lines+markers",
+            name="Mean Temp.",
+            line=dict(color="orange", width=3),
+            yaxis="y1",
+            hovertemplate="Value: %{y:.2f} °C<br>Parameter: Mean Temp<extra></extra>"
+        ))
+        fig.add_trace(go.Scatter(
+            x=line_data[line_dis],
+            y=line_data["min_temp"],
+            mode="lines+markers",
+            name="Min. Temp.",
+            line=dict(color="darkblue", width=3),
+            yaxis="y1",
+            hovertemplate="Value: %{y:.2f} °C<br>Parameter: Min Temp<extra></extra>"
+        ))
+        fig.add_trace(go.Bar(
+            x=line_data[line_dis],
+            y=line_data["acc_precip"],
+            name="Acc. Precipitation",
+            marker_color="lightblue",
+            opacity=0.6,
+            yaxis="y2",
+            hovertemplate="Value: %{y:.2f} mm<br>Parameter: Acc. Precip.<extra></extra>"
+        ))
+        
+        if trendline_toggle and selected_year == None:
+            x = line_data[line_dis]
+
+            # Create trendlines 
+            # Max temp
+            y = line_data["max_temp"]
+            slope, intercept = np.polyfit(x, y, 1)
+            trend_y = slope * x + intercept
+            fig.add_trace(go.Scatter(
+                x=line_data[line_dis],
+                y=trend_y,
+                mode="lines",
+                name="Trend Max. Temp.",
+                line=dict(color="firebrick", dash= "dot", width=3),
+                yaxis="y1",
+                hovertemplate="Value: %{y:.2f} °C<br>Parameter: Max Temp<extra></extra>"
+            ))
+            # Mean temp
+            y = line_data["mean_temp"]
+            slope, intercept = np.polyfit(x, y, 1)
+            trend_y = slope * x + intercept
+            fig.add_trace(go.Scatter(
+                x=line_data[line_dis],
+                y=trend_y,
+                mode="lines",
+                name="Trend Mean Temp.",
+                line=dict(color="orange", dash= "dot", width=3),
+                yaxis="y1",
+                hovertemplate="Value: %{y:.2f} °C<br>Parameter: Mean Temp<extra></extra>"
+            ))
+            # Min temp
+            y = line_data["min_temp"]
+            slope, intercept = np.polyfit(x, y, 1)
+            trend_y = slope * x + intercept
+            fig.add_trace(go.Scatter(
+                x=line_data[line_dis],
+                y=trend_y,
+                mode="lines",
+                name="Trend Min. Temp.",
+                line=dict(color="darkblue", dash= "dot", width=3),
+                yaxis="y1",
+                hovertemplate="Value: %{y:.2f} °C<br>Parameter: Min Temp<extra></extra>"
+            ))
+            # Acc Precip
+            y = line_data["acc_precip"]
+            slope, intercept = np.polyfit(x, y, 1)
+            trend_y = slope * x + intercept
+            fig.add_trace(go.Scatter(
+                x=line_data[line_dis],
+                y=trend_y,
+                mode="lines",
+                name="Trend Acc. Precip.",
+                line=dict(color="teal", dash= "dot", width=3),
+                yaxis="y2",
+                hovertemplate="Value: %{y:.2f} mm<br>Parameter: Acc. Precip.<extra></extra>"
+            ))
+        if selected_year is not None:
+            # Create lines and bar      
+            fig.add_trace(go.Scatter(
+                x=line_data[line_dis],
+                y=benchmark_data["max_temp"],
+                mode="lines",
+                name="Avg. Max. Temp.",
+                line=dict(color="firebrick", dash="dash", width=3),
+                yaxis="y1",
+                hovertemplate="Value: %{y:.2f} °C<br>Parameter: Max Temp<extra></extra>"
+            ))
+            fig.add_trace(go.Scatter(
+                x=line_data[line_dis],
+                y=benchmark_data["mean_temp"],
+                mode="lines",
+                name="Avg. Mean Temp.",
+                line=dict(color="orange", dash="dash", width=3),
+                yaxis="y1",
+                hovertemplate="Value: %{y:.2f} °C<br>Parameter: Mean Temp<extra></extra>"
+            ))
+            fig.add_trace(go.Scatter(
+                x=line_data[line_dis],
+                y=benchmark_data["min_temp"],
+                mode="lines",
+                name="Avg. Min. Temp.",
+                line=dict(color="darkblue", dash="dash", width=3),
+                yaxis="y1",
+                hovertemplate="Value: %{y:.2f} °C<br>Parameter: Min Temp<extra></extra>"
+            ))
+            fig.add_trace(go.Scatter(
+                x=line_data[line_dis],
+                y=benchmark_data["acc_precip"],
+                mode="lines",
+                name="Avg. Acc. Precip.",
+                line=dict(color="teal", dash="dash", width=3),
+                # mode="markers",
+                # name="Acc. Precipitation",
+                # marker=dict(
+                #     symbol="line-ew",  # Short horizontal line marker
+                #     color="red",
+                #     size=15,  # Adjust width of the line
+                #     line=dict(width=3, color = "teal")  # Thickness of marker
+                # ),
+                # opacity=0.6,
+                yaxis="y2",
+                hovertemplate="Value: %{y:.2f} mm<br>Parameter: Acc. Precip.<extra></extra>"
+            ))
+        
+        # Update layout
+        fig.update_layout(
+            font=dict(family="Segoe UI, sans-serif", size = 14),
+            yaxis=dict(
+                title="Temperature (°C)",
+                side="left",
+                gridcolor="lightgrey",
+                range=[-20,30],
+                zeroline=True,
+                zerolinewidth=2,
+                zerolinecolor="lightgrey",
+                dtick=5
+            ),
+            yaxis2=dict(
+                title="Accumulated Precipitation (mm)",
+                overlaying="y",
+                side="right",
+                range=[0,150],
+                showgrid=False,
+                dtick=15
+            ),
+            barmode="group",
+            legend=dict(
+                x=0,  # Center the legend horizontally
+                y=-0.15,  # Place the legend below the chart
+                orientation="h",  # Horizontal layout
+                xanchor="left",  # Align the legend center horizontally
+                yanchor="top"  # Anchor the legend at the top
+            ),
+            dragmode = False,
+            margin=dict(l=40, r=40, t=40, b=40),
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
         )
-        trendline_values = trend_slope * full_year_range + trend_intercept
-        timeline.add_trace(go.Scatter(
-            x=full_year_range,
-            y=trendline_values,
-            mode="lines",
-            name="Trendline in Denmark (2011-2024)",
-            line=dict(color="forestgreen", width=2, dash="dot"),
-            hoverinfo="skip",
-            showlegend=trendline_show_legend,
+        
+    else:
+        # Filter Denmark data for the full 2011-2024 period (using selected months)
+        denmark_filtered_data = data_grid[
+            (data_grid["year"].between(2011, 2024)) &
+            (data_grid["month"].isin(selected_months))
+        ]
+        trend_unit = "mm" if parameter == "acc_precip" else "°C"
+        denmark_average_data = denmark_filtered_data.groupby("year")[parameter].mean().reset_index()
+        
+        fig = go.Figure()
+        
+        # Add Denmark's actual data trace
+        fig.add_trace(go.Scatter(
+            x=denmark_average_data["year"],
+            y=denmark_average_data[parameter],
+            mode="lines+markers",
+            name="Denmark",
+            line=dict(color="forestgreen"),
+            marker=dict(size=8),
+            hovertemplate=(
+                "Location: Denmark<br>Value: %{y:.2f} " + trend_unit +
+                "<br>Year: %{x}<extra></extra>"
+            ),
             legendgroup="Denmark",  # Assign a group
         ))
         
-        # Add local trendline only if no regions are selected and the selected year range is different from the full range
-        if not selected_regions and (selected_years != [2011, 2024] and len(selected_years) == 2):
-            filtered_data = denmark_average_data[
-                denmark_average_data["year"].between(selected_year_1, selected_year_2)
-            ]
-            if len(filtered_data) > 1:
-                local_slope, local_intercept = np.polyfit(
-                    filtered_data["year"], filtered_data[parameter], 1
-                )
-                local_trendline_values = local_slope * filtered_data["year"] + local_intercept
-                local_trendline_color = "blue" if local_slope < 0 else "red"
-                timeline.add_trace(go.Scatter(
-                    x=filtered_data["year"],
-                    y=local_trendline_values,
-                    mode="lines",
-                    name=f"Trendline in Denmark ({selected_year_1}-{selected_year_2})",
-                    line=dict(color=local_trendline_color, width=2, dash="dot"),
-                    hoverinfo="skip",
-                    showlegend=trendline_show_legend
-                ))
-    
-    # If regions are selected, add their data and (if toggled) their trendlines
-    if selected_regions:
-        combined_filtered_data = pd.concat([
-            data_grid[data_grid["cell_id"].isin(selected_regions)],
-            data_municipality[data_municipality["cell_id"].isin(selected_regions)]
-        ])
-        regions_filtered_data = combined_filtered_data[
-            (combined_filtered_data["month"].isin(selected_months)) &
-            (combined_filtered_data["year"].between(2011, 2024))
-        ]
+        # Determine if trendlines are toggled on
+        show_trendlines = 'show' in trendline_toggle
+        # If regions are selected, hide trendline legends
+        trendline_show_legend = False if selected_regions else True
         
-        def get_region_name(region_id):
-            if visualization_mode == "municipality":
-                feature = next((f for f in geojson_municipality_data["features"]
-                                if f["properties"]["cell_id"] == region_id), None)
-                return feature["properties"]["municipality"] if feature else f"{region_id}"
-            return f"{region_id}"
-        
-        for idx, region in enumerate(selected_regions):
-            region_data = regions_filtered_data[regions_filtered_data["cell_id"] == region]
-            if not region_data.empty:
-                region_timeline = region_data.groupby("year")[parameter].mean().reset_index()
-                region_name = get_region_name(region)
-                region_color = COLOR_PALETTE[idx % len(COLOR_PALETTE)]
-                timeline.add_trace(go.Scatter(
-                    x=region_timeline["year"],
-                    y=region_timeline[parameter],
-                    mode="lines+markers",
-                    name=region_name,
-                    line=dict(width=2, color=region_color),
-                    marker=dict(size=8),
-                    hovertemplate=(
-                        "Location: " + region_name +
-                        "<br>Value: %{y:.2f} " + trend_unit +
-                        "<br>Year: %{x}<extra></extra>"
-                    ),
-                    legendgroup=region_name,  # Link the region and its trendline
-                ))
-                # Add region trendline if toggled on (with no legend)
-                if show_trendlines and len(region_timeline["year"]) > 1:
-                    reg_slope, reg_intercept = np.polyfit(
-                        region_timeline["year"], region_timeline[parameter], 1
+        # Add Denmark full-range trendline (always in forestgreen with dash "dot")
+        if show_trendlines:
+            full_year_range = pd.Series(range(2011, 2025))
+            trend_slope, trend_intercept = np.polyfit(
+                denmark_average_data["year"], denmark_average_data[parameter], 1
+            )
+            trendline_values = trend_slope * full_year_range + trend_intercept
+            fig.add_trace(go.Scatter(
+                x=full_year_range,
+                y=trendline_values,
+                mode="lines",
+                name="Trendline in Denmark (2011-2024)",
+                line=dict(color="forestgreen", width=2, dash="dot"),
+                hoverinfo="skip",
+                showlegend=trendline_show_legend,
+                legendgroup="Denmark",  # Assign a group
+            ))
+            
+            # Add local trendline only if no regions are selected and the selected year range is different from the full range
+            if not selected_regions:
+                filtered_data = denmark_average_data
+                if len(filtered_data) > 1:
+                    local_slope, local_intercept = np.polyfit(
+                        filtered_data["year"], filtered_data[parameter], 1
                     )
-                    reg_trendline_values = reg_slope * region_timeline["year"] + reg_intercept
-                    timeline.add_trace(go.Scatter(
-                        x=region_timeline["year"],
-                        y=reg_trendline_values,
+                    local_trendline_values = local_slope * filtered_data["year"] + local_intercept
+                    local_trendline_color = "blue" if local_slope < 0 else "red"
+                    fig.add_trace(go.Scatter(
+                        x=filtered_data["year"],
+                        y=local_trendline_values,
                         mode="lines",
-                        name=f"{region_name} Trend",
-                        line=dict(width=2, dash="dot", color=region_color),
+                        name=f"Trendline in Denmark",
+                        line=dict(color=local_trendline_color, width=2, dash="dot"),
                         hoverinfo="skip",
-                        showlegend=False,
+                        showlegend=trendline_show_legend
+                    ))
+        
+        # If regions are selected, add their data and (if toggled) their trendlines
+        if selected_regions:
+            combined_filtered_data = pd.concat([
+                data_grid[data_grid["cell_id"].isin(selected_regions)],
+                data_municipality[data_municipality["cell_id"].isin(selected_regions)]
+            ])
+            regions_filtered_data = combined_filtered_data[
+                (combined_filtered_data["month"].isin(selected_months)) &
+                (combined_filtered_data["year"].between(2011, 2024))
+            ]
+            
+            def get_region_name(region_id):
+                if mode == "municipality":
+                    feature = next((f for f in geojson_municipality_data["features"]
+                                    if f["properties"]["cell_id"] == region_id), None)
+                    return feature["properties"]["municipality"] if feature else f"{region_id}"
+                return f"{region_id}"
+            
+            for idx, region in enumerate(selected_regions):
+                region_data = regions_filtered_data[regions_filtered_data["cell_id"] == region]
+                if not region_data.empty:
+                    region_timeline = region_data.groupby("year")[parameter].mean().reset_index()
+                    region_name = get_region_name(region)
+                    region_color = COLOR_PALETTE[idx % len(COLOR_PALETTE)]
+                    fig.add_trace(go.Scatter(
+                        x=region_timeline["year"],
+                        y=region_timeline[parameter],
+                        mode="lines+markers",
+                        name=region_name,
+                        line=dict(width=2, color=region_color),
+                        marker=dict(size=8),
+                        hovertemplate=(
+                            "Location: " + region_name +
+                            "<br>Value: %{y:.2f} " + trend_unit +
+                            "<br>Year: %{x}<extra></extra>"
+                        ),
                         legendgroup=region_name,  # Link the region and its trendline
                     ))
-    
-    # Add vertical dashed lines for the selected years (this remains unchanged)
-    for year in selected_years:
-        timeline.add_shape(
-            dict(
-                type="line",
-                x0=year, x1=year,
-                y0=0, y1=1,
-                xref="x", yref="paper",
-                line=dict(color="grey", dash="dash", width=2)
-            )
-        )
-    
-    if parameter == "acc_precip": 
-        # Update layout as before
-        timeline.update_layout(
-            font=dict(family="Segoe UI, sans-serif", size = 14),
-            plot_bgcolor="white",
-            paper_bgcolor="white",
-            xaxis=dict(
-                title=parameter_name if len(selected_months) == 12 else f"Average {parameter_name} for selected month(s)",
-                range=[2010.5, 2024.5],
-                tickmode="linear",
-                tick0=2011,
-                dtick=1,
-                fixedrange=True,
-                gridcolor="lightgrey",
-                showgrid=False
-            ),
-            yaxis=dict(
-                title=PARAMETER_LABELS.get(parameter, parameter),
-                range=[min_value_precip-5, max_value_precip+5],
-                gridcolor="lightgrey",
-                zeroline=True,
-                zerolinewidth=2,
-                zerolinecolor="lightgrey"
-            ),
-            margin={"r": 40, "t": 40, "l": 40, "b": 40},
-            showlegend=True,
-            legend=dict(
-                orientation="h",
-                x=0,
-                y=-0.2,
-                xanchor="left",
-                yanchor="bottom"
-            ),
-            dragmode=False
-        )
-    else: 
-        timeline.update_layout(
-            font=dict(family="Segoe UI, sans-serif", size = 14),
-            plot_bgcolor="white",
-            paper_bgcolor="white",
-            xaxis=dict(
-                title=parameter_name if len(selected_months) == 12 else f"Average {parameter_name} for selected month(s)",
-                range=[2010.5, 2024.5],
-                tickmode="linear",
-                tick0=2011,
-                dtick=1,
-                fixedrange=True,
-                gridcolor="lightgrey",
-                showgrid=False
-            ),
-            yaxis=dict(
-                title=PARAMETER_LABELS.get(parameter, parameter),
-                range=[min_value-5, max_value+5],
-                gridcolor="lightgrey",
-                zeroline=True,
-                zerolinewidth=2,
-                zerolinecolor="lightgrey"
-            ),
-            margin={"r": 40, "t": 40, "l": 40, "b": 40},
-            showlegend=True,
-            legend=dict(
-                orientation="h",
-                x=0,
-                y=-0.2,
-                xanchor="left",
-                yanchor="bottom"
-            ),
-            dragmode=False
-        )
+                    # Add region trendline if toggled on (with no legend)
+                    if show_trendlines and len(region_timeline["year"]) > 1:
+                        reg_slope, reg_intercept = np.polyfit(
+                            region_timeline["year"], region_timeline[parameter], 1
+                        )
+                        reg_trendline_values = reg_slope * region_timeline["year"] + reg_intercept
+                        fig.add_trace(go.Scatter(
+                            x=region_timeline["year"],
+                            y=reg_trendline_values,
+                            mode="lines",
+                            name=f"{region_name} Trend",
+                            line=dict(width=2, dash="dot", color=region_color),
+                            hoverinfo="skip",
+                            showlegend=False,
+                            legendgroup=region_name,  # Link the region and its trendline
+                        ))
         
-    return timeline
+        # Add vertical dashed lines for the selected years (this remains unchanged)
+        
+        # Update layout as before
+        fig.update_layout(
+            font=dict(family="Segoe UI, sans-serif", size = 14),
+            plot_bgcolor="white",
+            paper_bgcolor="white",
+            xaxis=dict(
+                title=parameter_name if len(selected_months) == 12 else f"Average {parameter_name} for selected month(s)",
+                range=[2010.5, 2024.5],
+                tickmode="linear",
+                tick0=2011,
+                dtick=1,
+                fixedrange=True,
+                gridcolor="lightgrey",
+                showgrid=False
+            ),
+            yaxis=dict(
+                title=PARAMETERS.get(parameter, parameter),
+                fixedrange=True,
+                gridcolor="lightgrey",
+                zeroline=True,
+                zerolinewidth=2,
+                zerolinecolor="lightgrey"
+            ),
+            margin={"r": 40, "t": 40, "l": 40, "b": 40},
+            height=600,
+            showlegend=True,
+            legend=dict(
+                orientation="h",
+                x=0,
+                y=-0.2,
+                xanchor="left",
+                yanchor="bottom"
+            ),
+            dragmode=False
+        )
+    if selected_year is None:
+        # Force every year to show from 2011 to 2024
+        fig.update_xaxes(
+            tickmode='array',
+            tickvals=list(range(2011, 2025)),
+            ticktext=[str(year) for year in range(2011, 2025)]
+        )
+    else:
+        # Replace month numbers with abbreviations
+        fig.update_xaxes(
+            tickmode='array',
+            tickvals=list(range(1, 13)),
+            ticktext=["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"]
+        )
+    return fig
 
 @app.callback(
     Output("overview-chart", "figure"),
@@ -1740,4 +1925,5 @@ def toggle_usecase_sheets(*args):
     return output_states
 
 if __name__ == "__main__":
-    app.run_server(debug=True, port=80, host='0.0.0.0')  
+    app.run_server(debug=True, port=5050)
+    #app.run_server(debug=True, port=80, host='0.0.0.0')
