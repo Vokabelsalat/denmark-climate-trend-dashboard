@@ -931,7 +931,6 @@ def update_timeline(parameter, selected_years, selected_months, selected_regions
             )
         )
     
-    print(parameter)
     if parameter == "acc_precip": 
         # Update layout as before
         timeline.update_layout(
