@@ -129,18 +129,42 @@ app.layout = html.Div(
                             html.Div(
                                 children=[
                                     html.Label(
-                                        "Main Parameter:",
-                                        style={"fontSize": "18px", "fontWeight": "bold", "margin": "0px"}
+                                        [
+                                            html.Img(src="/assets/chart-line-solid.svg", height=25),
+                                            html.Span("Parameter:", style={'padding-left': 5}),
+                                        ],
+                                        style={ "fontWeight": "bold", "margin": "0px", "display": "flex", "alignItems": "center"}
                                     ),
                                     dcc.RadioItems(
                                         id="parameter-dropdown",
                                         options=[
-                                            {"label": "Max. Temp.", "value": "max_temp"},
-                                            {"label": "Mean Temp.", "value": "mean_temp"},
-                                            {"label": "Min. Temp.", "value": "min_temp"},
-                                            {"label": "Acc. Precip.", "value": "acc_precip"}
+                                            {"label":  [
+                                                    html.Img(src="/assets/temperature-arrow-up-solid.svg", height=20),
+                                                    html.Span("Max. Temp."),
+                                                ], 
+                                                "value": "max_temp"
+                                            },
+                                            {"label":  [
+                                                    html.Img(src="/assets/temperature-half-solid.svg", height=20),
+                                                    html.Span("Mean Temp."),
+                                                ], 
+                                                "value": "mean_temp"
+                                            },
+                                            {"label":  [
+                                                    html.Img(src="/assets/temperature-arrow-down-solid.svg", height=20),
+                                                    html.Span("Min. Temp."),
+                                                ], 
+                                                "value": "min_temp"
+                                            },
+                                            {"label":  [
+                                                    html.Img(src="/assets/droplet-solid.svg", height=20),
+                                                    html.Span("Acc. Precip."),
+                                                ], 
+                                                "value": "acc_precip"
+                                            },
                                         ],
                                         value="mean_temp",
+                                        className="options",
                                         labelStyle={'display': 'block', 'fontSize': '18px', 'marginTop': "5px"}
                                     )
                                 ],
@@ -163,28 +187,54 @@ app.layout = html.Div(
                                         style={"fontSize": "16px", "fontWeight": "bold", "marginRight": "10px"}
                                     ),
                                 ],
-                                style={"display": "flex", "alignItems": "center"}
+                                style={"display": "none", "alignItems": "center"}
                             ),
                             # Right side: New subparameter selection with four buttons
                             html.Div(
                                 children=[
                                     html.Label(
-                                        "Sub-Parameter:",
-                                        style={"fontSize": "18px", "fontWeight": "bold", "margin": "0px"}
+                                        [
+                                            html.Img(src="/assets/chart-column-solid.svg", height=25),
+                                            html.Span("Parameter:", style={'padding-left': 5}),
+                                        ],
+                                        style={ "fontWeight": "bold", "margin": "0px", "display": "flex", "alignItems": "center"}
                                     ),
                                     dcc.RadioItems(
                                         id="parameter-dropdown2",
                                         options=[
-                                            {"label": "Ice Days", "value": "ice_para"},
-                                            {"label": "Heat. Deg. Days", "value": "heat_para"},
-                                            {"label": "Summer Days", "value": "summer_para"},
-                                            {"label": "Extreme Rain Days", "value": "extrain_para"}
+                                            {"label":  [
+                                                    html.Img(src="/assets/snowflake-solid.svg", height=20),
+                                                    html.Span("Ice Days"),
+                                                ], 
+                                                "value": "ice_para"
+                                            },
+                                            {"label":  [
+                                                    html.Img(src="/assets/mitten-solid.svg", height=20),
+                                                    html.Span("Heat. Deg. Days"),
+                                                ], 
+                                                "value": "heat_para"
+                                            },
+                                            {"label":  [
+                                                    html.Img(src="/assets/sun-solid.svg", height=20),
+                                                    html.Span("Summer Days"),
+                                                ], 
+                                                "value": "summer_para"
+                                            },
+                                            {"label":  [
+                                                    html.Img(src="/assets/cloud-showers-water-solid.svg", height=20),
+                                                    html.Span("Extreme Rain Days"),
+                                                ], 
+                                                "value": "extrain_para"
+                                            },
                                         ],
                                         value="heat_para",
-                                        labelStyle={'display': 'block', 'fontSize': '18px', 'marginTop': "5px"}
+                                        labelStyle={"display": "flex", "align-items": "center"},
+                                        style={"display": "flex", "gap": "5px", "flexDirection": "column"},
+                                        className="options"
+                                        # labelStyle={'display': 'block', 'fontSize': '18px', 'marginTop': "5px"}
                                     )
                                 ],
-                                style={"flex": "1", "margin": "10px", "display": "flex", "flexDirection": "column"}
+                                style={"flex": "1", "margin": "10px", "display": "flex", "flexDirection": "column", "alignSelf": "end"}
                             )
                         ],
                         className="parameters-wrapper"
@@ -193,51 +243,51 @@ app.layout = html.Div(
                         "To select regions, click on map ↓ ", 
                         style={"fontSize": "18px", "font-style": "italic", "margin": "0px"}
                     ),
-                    html.Div(
-                        children=[
-                            # Reset Filters button (unchanged)
-                            html.A(
-                                html.Button(
-                                    id="reset-button",
-                                    style={
-                                        "width": "150px",
-                                        "height": "35px",
-                                        "backgroundColor": "rgba(220, 220, 220, 1)",
-                                        "border": "2px solid rgba(220, 220, 220, 1)",
-                                        "borderRadius": "14px",
-                                        "display": "flex",
-                                        "alignItems": "center",
-                                        "justifyContent": "center",
-                                        "gap": "10px",
-                                        "cursor": "pointer",
-                                        "padding": "6px"
-                                    },
-                                    n_clicks=0,
-                                    title="Reset filters",
-                                    children=[
-                                        html.Img(
-                                            src="/assets/reset.png",
-                                            style={"width": "25px", "height": "25px"}
-                                        ),
-                                        html.Span(
-                                            "Reset Filters",
-                                            style={
-                                                "fontFamily": "Segoe UI, sans-serif",
-                                                "color": "black",
-                                                "fontSize": "16px",
-                                                "fontWeight": "bold"
-                                            }
-                                        )
-                                    ]
-                                ),
-                                href="/",
-                                style={"textDecoration": "none", "margin": "10px 6px"}
-                            ),
-                        ],
-                        style={"display": "flex", "alignItems": "center"}
-                    )
+                    # html.Div(
+                    #     children=[
+                    #         # Reset Filters button (unchanged)
+                    #         html.A(
+                    #             html.Button(
+                    #                 id="reset-button",
+                    #                 style={
+                    #                     "width": "150px",
+                    #                     "height": "35px",
+                    #                     "backgroundColor": "rgba(220, 220, 220, 1)",
+                    #                     "border": "2px solid rgba(220, 220, 220, 1)",
+                    #                     "borderRadius": "14px",
+                    #                     "display": "flex",
+                    #                     "alignItems": "center",
+                    #                     "justifyContent": "center",
+                    #                     "gap": "10px",
+                    #                     "cursor": "pointer",
+                    #                     "padding": "6px"
+                    #                 },
+                    #                 n_clicks=0,
+                    #                 title="Reset filters",
+                    #                 children=[
+                    #                     html.Img(
+                    #                         src="/assets/reset.png",
+                    #                         style={"width": "25px", "height": "25px"}
+                    #                     ),
+                    #                     html.Span(
+                    #                         "Reset Filters",
+                    #                         style={
+                    #                             "fontFamily": "Segoe UI, sans-serif",
+                    #                             "color": "black",
+                    #                             "fontSize": "16px",
+                    #                             "fontWeight": "bold"
+                    #                         }
+                    #                     )
+                    #                 ]
+                    #             ),
+                    #             href="/",
+                    #             style={"textDecoration": "none", "margin": "10px 6px"}
+                    #         ),
+                    #     ],
+                    #     style={"display": "flex", "alignItems": "center"}
+                    # )
                 ], className="menu"),
-                # html.Button("Reset Zoom", id="reset-zoom", n_clicks=0),
+                html.Button("Reset Zoom", id="reset-zoom", n_clicks=0),
             ], className="menuWrapper"),
             html.Div([
                 dcc.Graph(id="trend-map", style={"width": "100%", "height": "100%", "position": "relative", "z-index": "1"}, config={"displayModeBar": False},),
@@ -290,8 +340,8 @@ app.layout = html.Div(
                     }
                 )
             ], className="lineChartWrapper"),
-            html.Div([
-            ], className="timeSlideWrapper"),
+            # html.Div([
+            # ], className="timeSlideWrapper"),
             html.Div([
                 dcc.Graph(
                     id="bar_chart",
