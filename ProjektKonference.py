@@ -1601,7 +1601,9 @@ def update_label(selected_parameter, selected_regions, selected_year, mode):
         "ice_para": "Ice Days",
         "heat_para": "Heating Degree Days",
         "summer_para": "Summer Days",
-        "extrain_para": "Extreme Rain Days"
+        "extrain_para": "Extreme Rain Days",
+        "maxwind_para": "Max. Wind Speed 10 min.",
+        "brightsun_para": "Bright Sunshine"
     }
     
     selected_parameter_name = parameters.get(selected_parameter)
