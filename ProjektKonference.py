@@ -139,7 +139,8 @@ app.layout = html.Div(
                                             {"label": "Max. Temp.", "value": "max_temp"},
                                             {"label": "Mean Temp.", "value": "mean_temp"},
                                             {"label": "Min. Temp.", "value": "min_temp"},
-                                            {"label": "Acc. Precip.", "value": "acc_precip"}
+                                            {"label": "Acc. Precip.", "value": "acc_precip"},
+                                            {"label": "Mean Wind Speed", "value": "mean_wind"}
                                         ],
                                         value="mean_temp",
                                         labelStyle={'display': 'block', 'fontSize': '18px', 'marginTop': "5px"}
@@ -160,7 +161,7 @@ app.layout = html.Div(
                                     # Label that will update based on the toggle state
                                     html.Div(
                                         id="map-parameter-toggle-label",
-                                        children="Show main parameters on map",
+                                        children="",
                                         style={"fontSize": "16px", "fontWeight": "bold", "marginRight": "10px"}
                                     ),
                                 ],
@@ -179,7 +180,9 @@ app.layout = html.Div(
                                             {"label": "Ice Days", "value": "ice_para"},
                                             {"label": "Heat. Deg. Days", "value": "heat_para"},
                                             {"label": "Summer Days", "value": "summer_para"},
-                                            {"label": "Extreme Rain Days", "value": "extrain_para"}
+                                            {"label": "Extreme Rain Days", "value": "extrain_para"},
+                                            {"label": "Max. Wind Speed 10 min.", "value": "maxwind_para"},
+                                            {"label": "Bright Sunshine", "value": "brightsun_para"}
                                         ],
                                         value="heat_para",
                                         labelStyle={'display': 'block', 'fontSize': '18px', 'marginTop': "5px"}
@@ -1297,7 +1300,9 @@ def update_bar_chart(selected_months, selected_parameter, selected_regions, mode
         "ice_para": "Ice Days",
         "heat_para": "Heating Degree Days",
         "summer_para": "Summer Days",
-        "extrain_para": "Extreme Rain Days"
+        "extrain_para": "Extreme Rain Days",
+        "maxwind_para": "Max. Wind Speed 10 min.",
+        "brightsun_para": "Bright Sunshine"
     }
     
     # If Denmark / Region POV
@@ -1350,7 +1355,7 @@ def update_bar_chart(selected_months, selected_parameter, selected_regions, mode
                     
         # Create figure layout
         fig = make_subplots(
-            rows=4, cols=1, shared_xaxes=True,
+            rows=6, cols=1, shared_xaxes=True,
             subplot_titles=subplot_titles
         )
 
