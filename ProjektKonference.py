@@ -97,7 +97,7 @@ app.layout = html.Div(
                 html.Div([
                     html.Label(
                         "Select/Deselect Month(s):", 
-                        style={"fontSize": "18px", "margin": "0px"}
+                        style={"fontSize": "18px", "margin": "5px"}
                     ),
                     dcc.Graph(
                         id="temp-wheel", 
@@ -130,10 +130,13 @@ app.layout = html.Div(
                                 children=[
                                     html.Label(
                                         [
-                                            html.Img(src="/assets/chart-line-solid.svg", height=25),
-                                            html.Span("Parameter:", style={'padding-left': 5}),
+                                            html.Div([
+                                                html.Img(src="/assets/chart-line-solid.svg", height=25),
+                                                html.Span("Parameter:", style={'padding-left': 5}),
+                                            ], style={"display": "flex", "alignItems": "center"}),
+                                            html.Div("→", style={'padding-left': 5}),
                                         ],
-                                        style={ "fontWeight": "bold", "margin": "0px", "display": "flex", "alignItems": "center"}
+                                        style={ "fontWeight": "bold", "margin": "0px", "display": "flex", "alignItems": "center", "justifyContent": "space-between"}
                                     ),
                                     dcc.RadioItems(
                                         id="parameter-dropdown",
@@ -169,25 +172,6 @@ app.layout = html.Div(
                                     )
                                 ],
                                 style={"flex": "1", "margin": "10px"}
-                            ),
-                            # Toggle switch container
-                            html.Div(
-                                children=[
-                                    # The toggle switch
-                                    daq.BooleanSwitch(
-                                        id="map-parameter-toggle",
-                                        on=False,  # Set default state here
-                                        color="purple",
-                                        style={"verticalAlign": "middle"}
-                                    ),
-                                    # Label that will update based on the toggle state
-                                    html.Div(
-                                        id="map-parameter-toggle-label",
-                                        children="Show main parameters on map",
-                                        style={"fontSize": "16px", "fontWeight": "bold", "marginRight": "10px"}
-                                    ),
-                                ],
-                                style={"display": "none", "alignItems": "center"}
                             ),
                             # Right side: New subparameter selection with four buttons
                             html.Div(
@@ -228,13 +212,14 @@ app.layout = html.Div(
                                             },
                                         ],
                                         value="heat_para",
-                                        labelStyle={"display": "flex", "align-items": "center"},
-                                        style={"display": "flex", "gap": "5px", "flexDirection": "column"},
-                                        className="options"
+                                        labelStyle={"display": "flex", "align-items": "center", 'fontSize': '18px', 'marginTop': "5px"},
+                                        className="options",
+                                        style={"marginRight": "15px"}
                                         # labelStyle={'display': 'block', 'fontSize': '18px', 'marginTop': "5px"}
-                                    )
+                                    ),
+                                    html.Div("↘", style={"textAlign": "end"})
                                 ],
-                                style={"flex": "1", "margin": "10px", "display": "flex", "flexDirection": "column", "alignSelf": "end"}
+                                style={"margin": "10px", "display": "flex", "flexDirection": "column", "alignSelf": "end"}
                             )
                         ],
                         className="parameters-wrapper"
@@ -287,7 +272,6 @@ app.layout = html.Div(
                     #     style={"display": "flex", "alignItems": "center"}
                     # )
                 ], className="menu"),
-                html.Button("Reset Zoom", id="reset-zoom", n_clicks=0),
             ], className="menuWrapper"),
             html.Div([
                 dcc.Graph(id="trend-map", style={"width": "100%", "height": "100%", "position": "relative", "z-index": "1"}, config={"displayModeBar": False},),
@@ -301,11 +285,63 @@ app.layout = html.Div(
                             ],
                             value="municipality",  # Default mode
                             labelStyle={'display': 'block', 'font-size': '18px'},
+                            className="options"
                         )
                     ], style={
                         "position": "absolute",
                         "top": "21px",
                         "left": "11px",
+                        "z-index": "2",
+                        "background": "rgba(255, 255, 255, 0.7)",
+                        "padding": "10px",
+                        "border-radius": "5px",
+                        "box-shadow": "0 2px 5px rgba(0,0,0,0.2)",
+                    }),
+                    # Toggle switch container
+                    # html.Div(
+                    #     children=[
+                    #         # The toggle switch
+                    #         daq.BooleanSwitch(
+                    #             id="map-parameter-toggle",
+                    #             on=False,  # Set default state here
+                    #             color="purple",
+                    #             style={"verticalAlign": "middle"}
+                    #         ),
+                    #         # Label that will update based on the toggle state
+                    #         html.Div(
+                    #             id="map-parameter-toggle-label",
+                    #             children="Show main parameters on map",
+                    #             style={"fontSize": "16px", "fontWeight": "bold", "marginRight": "10px"}
+                    #         ),
+                    #     ],
+                    #     style={"display": "none", "alignItems": "center"}
+                    # ),
+                     html.Div([
+                        html.Label("Parameters on map:", style={"fontSize": "18px", "fontWeight": "bold", "marginBottom": "5px"}),
+                        dcc.RadioItems(
+                            id="map-parameter-select",
+                            options=[
+                                 {"label":  [
+                                        html.Img(src="/assets/chart-line-solid.svg", height=20),
+                                        html.Span("Main"),
+                                    ], 
+                                    "value": "main"
+                                },
+                                {"label":  [
+                                        html.Img(src="/assets/chart-column-solid.svg", height=20),
+                                        html.Span("Sub"),
+                                    ], 
+                                    "value": "sub"
+                                },
+                            ],
+                            value="main",  # Default mode
+                            labelStyle={'display': 'block', 'font-size': '18px'},
+                            className="options"
+                        )
+                    ], style={
+                        "position": "absolute",
+                        "top": "21px",
+                        "right": "110px",
                         "z-index": "2",
                         "background": "rgba(255, 255, 255, 0.7)",
                         "padding": "10px",
@@ -322,22 +358,25 @@ app.layout = html.Div(
                     style={"width": "100%", "height": "100%", "margin": "0px"},
                     config={"displayModeBar": False}
                 ),
-                html.Div(
+                html.Label(
+                    id="dynamic-label-timeline",
+                    className="dynamic-label",
+                    style={"top": "11px"}
+                ),
+                html.Div([
                     dcc.Checklist(
                         id="trendline-toggle",
                         options=[{"label": "Show Trendlines", "value": "show"}],
                         value=["show"],
                         labelStyle={"fontSize": "16px", "fontWeight": "bold"}
                     ),
-                    style={
-                        "position": "absolute",
-                        "top": "5px",
-                        "right": "5px",
-                        "backgroundColor": "rgba(255,255,255,0.7)",
-                        "padding": "5px",
-                        "borderRadius": "5px",
-                        "zIndex": "3"
-                    }
+                    dcc.Checklist(
+                        id="relative-values-toggle",
+                        options=[{"label": "Use Relative Values", "value": "use"}],
+                        value=[],
+                        labelStyle={"fontSize": "16px", "fontWeight": "bold"}
+                    )],
+                    className="chartOptions"
                 )
             ], className="lineChartWrapper"),
             # html.Div([
@@ -349,23 +388,34 @@ app.layout = html.Div(
                     config={"displayModeBar": False},
                 ),
                 html.Label(
-                    id="dynamic-label",
-                    style={
-                        "fontSize": "18px",
-                        "fontWeight": "bold",
-                        "margin": "0px",
-                        "marginRight": "10px",
-                        "position": "absolute",
-                        "top": "5px",
-                        "left": "5px"
-                    }
+                    id="dynamic-label-barchart",
+                    className="dynamic-label"
                 ),
-                dcc.Checklist(
-                    id="barchart-toggle",
-                    options=[{"label": "Show Trendlines", "value": "show"}],
-                    value=["show"],
-                    labelStyle={"fontSize": "16px", "fontWeight": "bold"},
-                    style={"position": "absolute", "top": "5px", "right": "5px"}
+                html.Div(
+                    [
+                        dcc.Checklist(
+                            id="barchart-toggle",
+                            options=[{"label": "Show Trendlines", "value": "show"}],
+                            value=["show"],
+                            labelStyle={"fontSize": "16px", "fontWeight": "bold"},
+                        ),
+                        html.Button([
+                             html.Img(
+                                src="/assets/reset.png",
+                                style={"width": "20px", "height": "20px"}
+                            ),
+                            html.Span(
+                                "Reset Zoom",
+                            )
+                        ], id="reset-zoom", n_clicks=0, className="resetButton scale-on-hover"),
+                        # dcc.Checklist(
+                        #     id="relative-values-toggle-barchart",
+                        #     options=[{"label": "Use Relative Values", "value": "use"}],
+                        #     value=["use"],
+                        #     labelStyle={"fontSize": "16px", "fontWeight": "bold"}
+                        # ),
+                    ],
+                    className="chartOptions"
                 ),
             ], className="barChartWrapper"),
         ]
@@ -377,12 +427,12 @@ app.layout = html.Div(
 # Colors for municipalities
 COLOR_PALETTE = ["gold", "coral", "mediumpurple"]
 
-@app.callback(
-    Output("map-parameter-toggle-label", "children"),
-    Input("map-parameter-toggle", "on")
-)
-def update_toggle_label(is_on):
-    return "Display sub-parameters" if is_on else "Display main parameters"
+# @app.callback(
+#     Output("map-parameter-toggle-label", "children"),
+#     Input("map-parameter-toggle", "on")
+# )
+# def update_toggle_label(is_on):
+#     return "Display sub-parameters" if is_on else "Display main parameters"
 
 @app.callback(
     Output("info-sheet", "style"),
@@ -499,12 +549,12 @@ def update_selected_months(tempwheel_clickData, selected_months):
      Input("parameter-dropdown2", "value"),
      Input("year-slider", "value"),
      Input("selected-months", "data"),
-     Input("map-parameter-toggle", "on")]
+     Input("map-parameter-select", "value")]
 )
-def update_temp_wheel(parameter, parameter2, selected_years, selected_months, toggle_state):
+def update_temp_wheel(parameter, parameter2, selected_years, selected_months, map_parameter):
     selected_year_1, selected_year_2 = sorted(selected_years)
-    
-    if toggle_state:
+
+    if map_parameter == "sub":
         data = parameter_grid
         parameter = parameter2
     else:
@@ -533,7 +583,7 @@ def update_temp_wheel(parameter, parameter2, selected_years, selected_months, to
         for value in trend_values
     ]
 
-    if toggle_state:
+    if map_parameter == "sub":
         # Dynamically choose colorscale
         colorscale = px.colors.diverging.PiYG
         colors = sample_colorscale(colorscale, normalized_trends)
@@ -592,9 +642,9 @@ def update_temp_wheel(parameter, parameter2, selected_years, selected_months, to
      Input("year-slider", "value"),
      Input("selected-months", "data"),
      Input("selected-regions", "data"),
-     Input("map-parameter-toggle", "on")]
+     Input("map-parameter-select", "value")]
 )
-def update_trend_map(mode, parameter_main, parameter_sub, selected_years, selected_months, selected_regions, toggle_state):
+def update_trend_map(mode, parameter_main, parameter_sub, selected_years, selected_months, selected_regions, map_parameter):
     selected_year_1, selected_year_2 = sorted(selected_years)
     
     # Mapping of parameters to user-friendly names
@@ -609,7 +659,7 @@ def update_trend_map(mode, parameter_main, parameter_sub, selected_years, select
         "extrain_para": "Extreme Rain Days"
     }
 
-    if toggle_state:
+    if map_parameter == "sub":
         parameter = parameter_sub
         if mode == "grid":
             data = parameter_grid
@@ -822,11 +872,12 @@ def update_trend_map(mode, parameter_main, parameter_sub, selected_years, select
      Input("selected-months", "data"),
      Input("selected-regions", "data"),
      Input("visualization-mode", "value"),
-     Input("trendline-toggle", "value")]
+     Input("trendline-toggle", "value"),
+     Input("relative-values-toggle", "value")]
 )
-def update_timeline(parameter, selected_years, selected_months, selected_regions, visualization_mode, trendline_toggle):
+def update_timeline(parameter, selected_years, selected_months, selected_regions, visualization_mode, trendline_toggle, use_relatives):
     selected_year_1, selected_year_2 = sorted(selected_years)
-    
+
     # Mapping for display names and units
     PARAMETER_LABELS = {
         "mean_temp": "Mean Temperature (°C)",
@@ -835,8 +886,6 @@ def update_timeline(parameter, selected_years, selected_months, selected_regions
         "min_temp": "Minimum Temperature (°C)"
     }
     parameter_name = PARAMETER_LABELS.get(parameter, parameter)
-    min_value = data_grid[parameter].min()
-    max_value = data_grid[parameter].max()
     
     # Filter Denmark data for the full 2011-2024 period (using selected months)
     denmark_filtered_data = data_grid[
@@ -848,9 +897,12 @@ def update_timeline(parameter, selected_years, selected_months, selected_regions
     
     timeline = go.Figure()
     
+    min_value = data_grid[parameter].min()
+    max_value = data_grid[parameter].max()
+
     min_value_precip = denmark_filtered_data["acc_precip"].min()
     max_value_precip = denmark_filtered_data["acc_precip"].max()
-    
+
     # Add Denmark's actual data trace
     timeline.add_trace(go.Scatter(
         x=denmark_average_data["year"],
@@ -977,7 +1029,6 @@ def update_timeline(parameter, selected_years, selected_months, selected_regions
             )
         )
     
-    print(parameter)
     if parameter == "acc_precip": 
         # Update layout as before
         timeline.update_layout(
@@ -985,7 +1036,8 @@ def update_timeline(parameter, selected_years, selected_months, selected_regions
             plot_bgcolor="white",
             paper_bgcolor="white",
             xaxis=dict(
-                title=parameter_name if len(selected_months) == 12 else f"Average {parameter_name} for selected month(s)",
+                # title=parameter_name if len(selected_months) == 12 else f"Average {parameter_name} for selected month(s)",
+                title="",
                 range=[2010.5, 2024.5],
                 tickmode="linear",
                 tick0=2011,
@@ -995,8 +1047,9 @@ def update_timeline(parameter, selected_years, selected_months, selected_regions
                 showgrid=False
             ),
             yaxis=dict(
-                title=PARAMETER_LABELS.get(parameter, parameter),
-                range=[min_value_precip-5, max_value_precip+5],
+                # title=PARAMETER_LABELS.get(parameter, parameter),
+                title="",
+                range=([min_value_precip-5, max_value_precip+5] if "use" in use_relatives else None),
                 gridcolor="lightgrey",
                 zeroline=True,
                 zerolinewidth=2,
@@ -1019,7 +1072,8 @@ def update_timeline(parameter, selected_years, selected_months, selected_regions
             plot_bgcolor="white",
             paper_bgcolor="white",
             xaxis=dict(
-                title=parameter_name if len(selected_months) == 12 else f"Average {parameter_name} for selected month(s)",
+                # title=parameter_name if len(selected_months) == 12 else f"Average {parameter_name} for selected month(s)",
+                title="",
                 range=[2010.5, 2024.5],
                 tickmode="linear",
                 tick0=2011,
@@ -1029,8 +1083,9 @@ def update_timeline(parameter, selected_years, selected_months, selected_regions
                 showgrid=False
             ),
             yaxis=dict(
-                title=PARAMETER_LABELS.get(parameter, parameter),
-                range=[min_value-5, max_value+5],
+                # title=PARAMETER_LABELS.get(parameter, parameter),
+                title="",
+                range=([min_value-1, max_value+1] if "use" in use_relatives else None),
                 gridcolor="lightgrey",
                 zeroline=True,
                 zerolinewidth=2,
@@ -1619,7 +1674,7 @@ def update_bar_chart(selected_months, selected_parameter, selected_regions, mode
     return fig
 
 @app.callback(
-    Output("dynamic-label", "children"),
+    Output("dynamic-label-barchart", "children"),
     [Input("parameter-dropdown2", "value"),
      Input("selected-regions", "data"),
      Input("selected_year", "data"),
@@ -1654,6 +1709,47 @@ def update_label(selected_parameter, selected_regions, selected_year, mode):
     # Create text
     distribution_text = "Yearly" if selected_year == None else "Monthly"
     parameter_text = "all parameters" if len(selected_regions) <= 1 else f"{selected_parameter_name}"
+    region_text = ("in Denmark" if len(selected_regions) == 0 else f"in {region_name}" if len(selected_regions) == 1 else "")
+    year_text = "" if selected_year == None else f"for {selected_year}"
+
+    return f"{distribution_text} distribution of {parameter_text} {region_text} {year_text}"
+
+@app.callback(
+    Output("dynamic-label-timeline", "children"),
+    [Input("parameter-dropdown", "value"),
+     Input("selected-regions", "data"),
+     Input("selected_year", "data"),
+     Input("visualization-mode", "value")]
+)
+def update_label(selected_parameter, selected_regions, selected_year, mode):
+    
+    # Save useful name for regions
+    for region in selected_regions:
+        if mode == "municipality":
+            region_str = str(region)
+            feature = next(
+                (f for f in geojson_municipality_data["features"] 
+                 if str(f["properties"].get("cell_id", "")) == region_str),
+                None
+            )
+            region_name = feature["properties"].get("municipality", f"Region {region}") if feature else f"Region {region}"
+        else:
+            region_name = str(region)
+    
+    # Save useful name for parameters
+    # Define parameters for the bar charts
+    parameters = {
+        "mean_temp": "Mean Temperature (°C)",
+        "acc_precip": "Accumulated Precipitation (mm)",
+        "max_temp": "Maximum Temperature (°C)",
+        "min_temp": "Minimum Temperature (°C)",
+    }
+    
+    selected_parameter_name = parameters.get(selected_parameter)
+    
+    # Create text
+    distribution_text = "Yearly" if selected_year == None else "Monthly"
+    parameter_text = f"{selected_parameter_name}"
     region_text = ("in Denmark" if len(selected_regions) == 0 else f"in {region_name}" if len(selected_regions) == 1 else "")
     year_text = "" if selected_year == None else f"for {selected_year}"
 
