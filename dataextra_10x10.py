@@ -4,7 +4,7 @@ import requests
 from datetime import datetime
 
 url = "https://dmigw.govcloud.dk/v2/climateData/collections/10kmGridValue/items"
-headers = {"X-Gravitee-Api-Key": "Insert your API key here!"}
+headers = {"X-Gravitee-Api-Key": "0cb2a379-840e-4158-a699-4f63f37e4e66"}
 
 # Define a helper function to fetch and process data (only for 2011-2024)
 def fetch_climate_data(parameter_id, value_name):
@@ -92,14 +92,15 @@ def fetch_climate_data_day(parameter_id, value_name):
 
 # Fetch data
 heat_df = fetch_climate_data("acc_heating_degree_days_17", "heat_para")
-heat_df2 = fetch_climate_data_day("acc_heating_degree_days_17", "heat_para")
 ice_df = fetch_climate_data_day("no_ice_days", "ice_para")
 summer_df = fetch_climate_data_day("no_summer_days", "summer_para")
 extrain_df = fetch_climate_data_day("no_days_acc_precip_10", "extrain_para")
+maxwind_df = fetch_climate_data("max_wind_speed_10min", "maxwind_para")
+brightsun_df = fetch_climate_data("bright_sunshine", "brightsun_para")
 
 # Merge the datasets on `cell_id`, `year`, and `month`
 merged_data = ice_df
-for df in [heat_df2, summer_df, extrain_df]:
+for df in [heat_df, summer_df, extrain_df, maxwind_df, brightsun_df]:
     merged_data = pd.merge(merged_data, df, on=["cell_id", "year", "month"], how="outer")
 
 # Define working directory
