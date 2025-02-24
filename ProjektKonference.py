@@ -67,7 +67,7 @@ app.layout = html.Div(
             info_sheet,
             html.Div([
                 # All the use case buttons imported from use_cases.py
-                use_cases,
+                use_cases, 
                 # Info button
                 html.Button(
                     id="info-button",
@@ -94,164 +94,150 @@ app.layout = html.Div(
         ], className="headerWrapper"),
         html.Div([
             html.Div([
+                html.Div([
+                    html.Label(
+                        "Select/Deselect Month(s):", 
+                        style={"fontSize": "18px", "margin": "0px"}
+                    ),
+                    dcc.Graph(
+                        id="temp-wheel", 
+                        config={"displayModeBar": False}
+                    ),
                     html.Div([
-                        html.Div([
-                            html.Label(
-                                "Select/Deselect Month(s):", 
-                                style={"fontSize": "18px", "fontWeight": "bold", "margin": "0px"}
-                            ),
-                            dcc.Graph(
-                                id="temp-wheel", 
-                                style={"width": "95%", "height": "200px", "margin": "0px 0"}, 
-                                config={"displayModeBar": False}
-                            ),
-                            html.Div([
-                                html.Label(
-                                    "Select Year Range:", 
-                                    style={"fontSize": "18px", "fontWeight": "bold", "margin": "0px"}
-                                ),
-                                dcc.RangeSlider(
-                                    id="year-slider",
-                                    min=int(data_grid["year"].min()),
-                                    max=int(data_grid["year"].max()),
-                                    step=1,
-                                    marks={
-                                        int(year): {
-                                            'label': str(year), 
-                                            'style': {'transform': 'rotate(45deg)', 'white-space': 'nowrap'}
-                                        } for year in data_grid["year"].unique()
-                                    },
-                                    value=[2011, 2024],
-                                    allowCross=True
-                                )
-                            ], style={"margin": "10px 0", "display": "none"}),
+                        html.Label(
+                            "Select Year Range:", 
+                            style={"fontSize": "18px", "margin": "0px"}
+                        ),
+                        dcc.RangeSlider(
+                            id="year-slider",
+                            min=int(data_grid["year"].min()),
+                            max=int(data_grid["year"].max()),
+                            step=1,
+                            marks={
+                                int(year): {
+                                    'label': str(year), 
+                                    'style': {'transform': 'rotate(45deg)', 'white-space': 'nowrap'}
+                                } for year in data_grid["year"].unique()
+                            },
+                            value=[2011, 2024],
+                            allowCross=True
+                        )
+                    ], style={"margin": "10px 0", "display": "none"}),
+                    html.Div(
+                        children=[
+                            # Left side: Existing parameter selection
                             html.Div(
                                 children=[
-                                    # Left side: Existing parameter selection
-                                    html.Div(
-                                        children=[
-                                            html.Label(
-                                                "Select Parameter:",
-                                                style={"fontSize": "18px", "fontWeight": "bold", "margin": "0px"}
-                                            ),
-                                            dcc.RadioItems(
-                                                id="parameter-dropdown",
-                                                options=[
-                                                    {"label": "Max. Temp.", "value": "max_temp"},
-                                                    {"label": "Mean Temp.", "value": "mean_temp"},
-                                                    {"label": "Min. Temp.", "value": "min_temp"},
-                                                    {"label": "Acc. Precip.", "value": "acc_precip"}
-                                                ],
-                                                value="mean_temp",
-                                                labelStyle={'display': 'block', 'fontSize': '18px', 'marginTop': "5px"}
-                                            )
-                                        ],
-                                        style={"flex": "1", "margin": "10px"}
+                                    html.Label(
+                                        "Main Parameter:",
+                                        style={"fontSize": "18px", "fontWeight": "bold", "margin": "0px"}
                                     ),
-                                    # Right side: New subparameter selection with four buttons
-                                    html.Div(
-                                        children=[
-                                            html.Label(
-                                                "Select Subpara:",
-                                                style={"fontSize": "18px", "fontWeight": "bold", "margin": "0px"}
-                                            ),
-                                            dcc.RadioItems(
-                                                id="parameter-dropdown2",
-                                                options=[
-                                                    {"label": "Ice Days", "value": "ice_para"},
-                                                    {"label": "Heat. Deg. Days", "value": "heat_para"},
-                                                    {"label": "Summer Days", "value": "summer_para"},
-                                                    {"label": "Extreme Rain Days", "value": "extrain_para"}
-                                                ],
-                                                value="heat_para",
-                                                labelStyle={'display': 'block', 'fontSize': '18px', 'marginTop': "5px"}
-                                            )
+                                    dcc.RadioItems(
+                                        id="parameter-dropdown",
+                                        options=[
+                                            {"label": "Max. Temp.", "value": "max_temp"},
+                                            {"label": "Mean Temp.", "value": "mean_temp"},
+                                            {"label": "Min. Temp.", "value": "min_temp"},
+                                            {"label": "Acc. Precip.", "value": "acc_precip"}
                                         ],
-                                        style={"flex": "1", "margin": "10px", "display": "flex", "flexDirection": "column"}
+                                        value="mean_temp",
+                                        labelStyle={'display': 'block', 'fontSize': '18px', 'marginTop': "5px"}
                                     )
                                 ],
-                                style={"display": "flex", "flexDirection": "row", "justifyContent": "space-between"}
+                                style={"flex": "1", "margin": "10px"}
                             ),
-                            html.Label(
-                                "To select regions, click on map →", 
-                                style={"fontSize": "18px", "fontWeight": "bold", "margin": "0px"}
-                            ),
+                            # Toggle switch container
                             html.Div(
                                 children=[
-                                    # Reset Filters button (unchanged)
-                                    html.A(
-                                        html.Button(
-                                            id="reset-button",
-                                            style={
-                                                "width": "150px",
-                                                "height": "35px",
-                                                "backgroundColor": "rgba(220, 220, 220, 1)",
-                                                "border": "2px solid rgba(220, 220, 220, 1)",
-                                                "borderRadius": "14px",
-                                                "display": "flex",
-                                                "alignItems": "center",
-                                                "justifyContent": "center",
-                                                "gap": "10px",
-                                                "cursor": "pointer",
-                                                "padding": "6px"
-                                            },
-                                            n_clicks=0,
-                                            title="Reset filters",
-                                            children=[
-                                                html.Img(
-                                                    src="/assets/reset.png",
-                                                    style={"width": "25px", "height": "25px"}
-                                                ),
-                                                html.Span(
-                                                    "Reset Filters",
-                                                    style={
-                                                        "fontFamily": "Segoe UI, sans-serif",
-                                                        "color": "black",
-                                                        "fontSize": "16px",
-                                                        "fontWeight": "bold"
-                                                    }
-                                                )
-                                            ]
-                                        ),
-                                        href="/",
-                                        style={"textDecoration": "none", "margin": "10px 6px"}
+                                    # The toggle switch
+                                    daq.BooleanSwitch(
+                                        id="map-parameter-toggle",
+                                        on=False,  # Set default state here
+                                        color="purple",
+                                        style={"verticalAlign": "middle"}
                                     ),
-                                    # Toggle switch container
+                                    # Label that will update based on the toggle state
                                     html.Div(
-                                        children=[
-                                            # Label that will update based on the toggle state
-                                            html.Div(
-                                                id="map-parameter-toggle-label",
-                                                children="Show main parameters on map",
-                                                style={"fontSize": "16px", "fontWeight": "bold", "marginRight": "10px"}
-                                            ),
-                                            # The toggle switch
-                                            daq.BooleanSwitch(
-                                                id="map-parameter-toggle",
-                                                on=False,  # Set default state here
-                                                color="purple",
-                                                style={"verticalAlign": "middle"}
-                                            )
-                                        ],
-                                        style={"display": "flex", "alignItems": "center"}
-                                    )
+                                        id="map-parameter-toggle-label",
+                                        children="Show main parameters on map",
+                                        style={"fontSize": "16px", "fontWeight": "bold", "marginRight": "10px"}
+                                    ),
                                 ],
                                 style={"display": "flex", "alignItems": "center"}
+                            ),
+                            # Right side: New subparameter selection with four buttons
+                            html.Div(
+                                children=[
+                                    html.Label(
+                                        "Sub-Parameter:",
+                                        style={"fontSize": "18px", "fontWeight": "bold", "margin": "0px"}
+                                    ),
+                                    dcc.RadioItems(
+                                        id="parameter-dropdown2",
+                                        options=[
+                                            {"label": "Ice Days", "value": "ice_para"},
+                                            {"label": "Heat. Deg. Days", "value": "heat_para"},
+                                            {"label": "Summer Days", "value": "summer_para"},
+                                            {"label": "Extreme Rain Days", "value": "extrain_para"}
+                                        ],
+                                        value="heat_para",
+                                        labelStyle={'display': 'block', 'fontSize': '18px', 'marginTop': "5px"}
+                                    )
+                                ],
+                                style={"flex": "1", "margin": "10px", "display": "flex", "flexDirection": "column"}
                             )
-
-                        ], style={
-                            "display": "flex",
-                            "flexDirection": "column",
-                            "width": "100%",
-                            "boxSizing": "border-box"
-                        }),
-                        html.Button("Reset Zoom", id="reset-zoom", n_clicks=0),
-                    ], style={
-                        "width": "100%",
-                        "height": "100%",
-                        "display": "inline-block",
-                        "verticalAlign": "top"
-                    })
+                        ],
+                        className="parameters-wrapper"
+                    ),
+                    html.Label(
+                        "To select regions, click on map ↓ ", 
+                        style={"fontSize": "18px", "font-style": "italic", "margin": "0px"}
+                    ),
+                    html.Div(
+                        children=[
+                            # Reset Filters button (unchanged)
+                            html.A(
+                                html.Button(
+                                    id="reset-button",
+                                    style={
+                                        "width": "150px",
+                                        "height": "35px",
+                                        "backgroundColor": "rgba(220, 220, 220, 1)",
+                                        "border": "2px solid rgba(220, 220, 220, 1)",
+                                        "borderRadius": "14px",
+                                        "display": "flex",
+                                        "alignItems": "center",
+                                        "justifyContent": "center",
+                                        "gap": "10px",
+                                        "cursor": "pointer",
+                                        "padding": "6px"
+                                    },
+                                    n_clicks=0,
+                                    title="Reset filters",
+                                    children=[
+                                        html.Img(
+                                            src="/assets/reset.png",
+                                            style={"width": "25px", "height": "25px"}
+                                        ),
+                                        html.Span(
+                                            "Reset Filters",
+                                            style={
+                                                "fontFamily": "Segoe UI, sans-serif",
+                                                "color": "black",
+                                                "fontSize": "16px",
+                                                "fontWeight": "bold"
+                                            }
+                                        )
+                                    ]
+                                ),
+                                href="/",
+                                style={"textDecoration": "none", "margin": "10px 6px"}
+                            ),
+                        ],
+                        style={"display": "flex", "alignItems": "center"}
+                    )
+                ], className="menu"),
+                # html.Button("Reset Zoom", id="reset-zoom", n_clicks=0),
             ], className="menuWrapper"),
             html.Div([
                 dcc.Graph(id="trend-map", style={"width": "100%", "height": "100%", "position": "relative", "z-index": "1"}, config={"displayModeBar": False},),
@@ -535,7 +521,6 @@ def update_temp_wheel(parameter, parameter2, selected_years, selected_months, to
 
     temp_wheel.update_layout(
         font=dict(family="Segoe UI, sans-serif"),
-        height=210,
         margin=dict(t=20, r=20, b=20, l=20),
         showlegend=False,
         paper_bgcolor="rgba(0, 0, 0, 0)"
@@ -1707,4 +1692,4 @@ def toggle_usecase_sheets(*args):
     return output_states
 
 if __name__ == "__main__":
-    app.run_server(debug=False, port=80, host='0.0.0.0')     
+    app.run_server(debug=True, port=80, host='0.0.0.0')     
