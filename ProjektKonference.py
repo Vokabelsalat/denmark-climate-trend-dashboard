@@ -835,6 +835,8 @@ def update_timeline(parameter, selected_years, selected_months, selected_regions
         "min_temp": "Minimum Temperature (°C)"
     }
     parameter_name = PARAMETER_LABELS.get(parameter, parameter)
+    min_value = data_grid[parameter].min()
+    max_value = data_grid[parameter].max()
     
     # Filter Denmark data for the full 2011-2024 period (using selected months)
     denmark_filtered_data = data_grid[
@@ -845,6 +847,9 @@ def update_timeline(parameter, selected_years, selected_months, selected_regions
     denmark_average_data = denmark_filtered_data.groupby("year")[parameter].mean().reset_index()
     
     timeline = go.Figure()
+    
+    min_value_precip = denmark_filtered_data["acc_precip"].min()
+    max_value_precip = denmark_filtered_data["acc_precip"].max()
     
     # Add Denmark's actual data trace
     timeline.add_trace(go.Scatter(
@@ -972,41 +977,77 @@ def update_timeline(parameter, selected_years, selected_months, selected_regions
             )
         )
     
-    # Update layout as before
-    timeline.update_layout(
-        font=dict(family="Segoe UI, sans-serif", size = 14),
-        plot_bgcolor="white",
-        paper_bgcolor="white",
-        xaxis=dict(
-            title=parameter_name if len(selected_months) == 12 else f"Average {parameter_name} for selected month(s)",
-            range=[2010.5, 2024.5],
-            tickmode="linear",
-            tick0=2011,
-            dtick=1,
-            fixedrange=True,
-            gridcolor="lightgrey",
-            showgrid=False
-        ),
-        yaxis=dict(
-            title=PARAMETER_LABELS.get(parameter, parameter),
-            fixedrange=True,
-            gridcolor="lightgrey",
-            zeroline=True,
-            zerolinewidth=2,
-            zerolinecolor="lightgrey"
-        ),
-        margin={"r": 40, "t": 40, "l": 40, "b": 40},
-        showlegend=True,
-        legend=dict(
-            orientation="h",
-            x=0,
-            y=-0.2,
-            xanchor="left",
-            yanchor="bottom"
-        ),
-        dragmode=False
-    )
-    
+    print(parameter)
+    if parameter == "acc_precip": 
+        # Update layout as before
+        timeline.update_layout(
+            font=dict(family="Segoe UI, sans-serif", size = 14),
+            plot_bgcolor="white",
+            paper_bgcolor="white",
+            xaxis=dict(
+                title=parameter_name if len(selected_months) == 12 else f"Average {parameter_name} for selected month(s)",
+                range=[2010.5, 2024.5],
+                tickmode="linear",
+                tick0=2011,
+                dtick=1,
+                fixedrange=True,
+                gridcolor="lightgrey",
+                showgrid=False
+            ),
+            yaxis=dict(
+                title=PARAMETER_LABELS.get(parameter, parameter),
+                range=[min_value_precip-5, max_value_precip+5],
+                gridcolor="lightgrey",
+                zeroline=True,
+                zerolinewidth=2,
+                zerolinecolor="lightgrey"
+            ),
+            margin={"r": 40, "t": 40, "l": 40, "b": 40},
+            showlegend=True,
+            legend=dict(
+                orientation="h",
+                x=0,
+                y=-0.2,
+                xanchor="left",
+                yanchor="bottom"
+            ),
+            dragmode=False
+        )
+    else: 
+        timeline.update_layout(
+            font=dict(family="Segoe UI, sans-serif", size = 14),
+            plot_bgcolor="white",
+            paper_bgcolor="white",
+            xaxis=dict(
+                title=parameter_name if len(selected_months) == 12 else f"Average {parameter_name} for selected month(s)",
+                range=[2010.5, 2024.5],
+                tickmode="linear",
+                tick0=2011,
+                dtick=1,
+                fixedrange=True,
+                gridcolor="lightgrey",
+                showgrid=False
+            ),
+            yaxis=dict(
+                title=PARAMETER_LABELS.get(parameter, parameter),
+                range=[min_value-5, max_value+5],
+                gridcolor="lightgrey",
+                zeroline=True,
+                zerolinewidth=2,
+                zerolinecolor="lightgrey"
+            ),
+            margin={"r": 40, "t": 40, "l": 40, "b": 40},
+            showlegend=True,
+            legend=dict(
+                orientation="h",
+                x=0,
+                y=-0.2,
+                xanchor="left",
+                yanchor="bottom"
+            ),
+            dragmode=False
+        )
+        
     return timeline
 
 @app.callback(
@@ -1742,4 +1783,4 @@ def toggle_usecase_sheets(*args):
     return output_states
 
 if __name__ == "__main__":
-    app.run_server(debug=True, port=80, host='0.0.0.0')     
+    app.run_server(debug=True, port=80, host='0.0.0.0')  
