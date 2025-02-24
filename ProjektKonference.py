@@ -333,7 +333,7 @@ COLOR_PALETTE = ["gold", "coral", "mediumpurple"]
     Input("map-parameter-toggle", "on")
 )
 def update_toggle_label(is_on):
-    return "Display sub-parameters" if is_on else "Display main parameters"
+    return "Display sub-parameters"
 
 @app.callback(
     Output("info-sheet", "style"),
