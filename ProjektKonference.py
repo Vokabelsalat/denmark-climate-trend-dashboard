@@ -16,8 +16,9 @@ import dash_daq as daq
 from use_cases import use_cases, use_cases_data
 from info_sheet import info_sheet
 
+from numpy import RankWarning
 import warnings
-warnings.simplefilter('ignore', np.exceptions.RankWarning)
+warnings.simplefilter('ignore', RankWarning)
 
 # File paths
 geojson_grid_file = "data/base_grid.geojson"
