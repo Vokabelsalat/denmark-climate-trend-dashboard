@@ -729,7 +729,12 @@ def update_trend_map(mode, parameter_main, parameter_sub, selected_years, select
         trend_df = pd.DataFrame(trend_data)
         trend_df["trend"] = trend_df["trend"].fillna(0)
         symmetric_max = max(abs(trend_df["trend"].min()), abs(trend_df["trend"].max()))
-        trend_unit = "days/year"
+        if parameter == "maxwind_para":
+            trend_unit = "m/s per year"
+        elif parameter == "brightsun_para":
+            trend_unit = "hours/year"
+        else:
+            trend_unit = "days/year"
     
         # Initialize the figure
         trend_map = go.Figure(go.Choroplethmap(
@@ -832,6 +837,8 @@ def update_trend_map(mode, parameter_main, parameter_sub, selected_years, select
     
         if parameter == "acc_precip":
             trend_unit = "mm/year"
+        elif parameter == "mean_wind":
+            trend_unit = "m/s per year"
         else:
             trend_unit = "°C/year"
     
