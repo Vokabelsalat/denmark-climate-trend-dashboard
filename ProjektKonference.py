@@ -12,12 +12,12 @@ import plotly.express as px
 from plotly.colors import sample_colorscale
 from plotly.subplots import make_subplots
 
-import dash_daq as daq
 from use_cases import use_cases, use_cases_data
 from info_sheet import info_sheet
 
 import warnings
-warnings.simplefilter('ignore', np.exceptions.RankWarning)
+from numpy import RankWarning
+warnings.simplefilter('ignore', RankWarning)
 
 # File paths
 geojson_grid_file = "data/base_grid.geojson"
@@ -631,6 +631,7 @@ def update_temp_wheel(parameter, parameter2, selected_years, selected_months, ma
         values=[1] * 12,
         textinfo="label",
         hoverinfo="label",
+        textposition="inside",
         insidetextorientation='radial',
         name="Test",
         marker=dict(colors=colors),
