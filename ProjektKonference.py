@@ -1634,6 +1634,8 @@ def update_bar_chart(selected_months, selected_parameter, selected_regions, mode
         "maxwind_para": "Max. Wind Speed 10 min.",
         "brightsun_para": "Bright Sunshine"
     }
+    agg_funcs = { key: ("mean" if key in ["maxwind_para", "brightsun_para"] else "sum")
+          for key in PARAMETERS.keys() }
     
     # If Denmark / Region POV
     if len(selected_regions) <= 1:
@@ -1667,9 +1669,6 @@ def update_bar_chart(selected_months, selected_parameter, selected_regions, mode
                 region_color = COLOR_PALETTE[idx % len(COLOR_PALETTE)]
             except ValueError:
                 region_color = COLOR_PALETTE[0]
-        
-        agg_funcs = { key: ("mean" if key in ["maxwind_para", "brightsun_para"] else "sum")
-              for key in PARAMETERS.keys() }
 
         # Save data (distribution)
         if selected_year == None:
