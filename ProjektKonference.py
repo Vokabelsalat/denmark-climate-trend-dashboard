@@ -16,9 +16,8 @@ import dash_daq as daq
 from use_cases import use_cases, use_cases_data
 from info_sheet import info_sheet
 
-from numpy import RankWarning
 import warnings
-warnings.simplefilter('ignore', RankWarning)
+warnings.simplefilter('ignore', np.exceptions.RankWarning)
 
 # File paths
 geojson_grid_file = "data/base_grid.geojson"
@@ -98,7 +97,7 @@ app.layout = html.Div(
                 html.Div([
                     html.Label(
                         "Select/Deselect Month(s):", 
-                        style={"fontSize": "18px", "margin": "0px"}
+                        style={"fontSize": "18px", "margin": "5px"}
                     ),
                     dcc.Graph(
                         id="temp-wheel", 
@@ -130,65 +129,115 @@ app.layout = html.Div(
                             html.Div(
                                 children=[
                                     html.Label(
-                                        "Main Parameter:",
-                                        style={"fontSize": "18px", "fontWeight": "bold", "margin": "0px"}
+                                        [
+                                            html.Div([
+                                                html.Img(src="/assets/chart-line-solid.svg", height=25),
+                                                html.Span("Parameter:", style={'padding-left': 5}),
+                                            ], style={"display": "flex", "alignItems": "center"}),
+                                            html.Div("→", style={'padding-left': 5}),
+                                        ],
+                                        style={ "fontWeight": "bold", "margin": "0px", "display": "flex", "alignItems": "center", "justifyContent": "space-between"}
                                     ),
                                     dcc.RadioItems(
                                         id="parameter-dropdown",
                                         options=[
-                                            {"label": "Max. Temp.", "value": "max_temp"},
-                                            {"label": "Mean Temp.", "value": "mean_temp"},
-                                            {"label": "Min. Temp.", "value": "min_temp"},
-                                            {"label": "Acc. Precip.", "value": "acc_precip"},
-                                            {"label": "Mean Wind Speed", "value": "mean_wind"}
+                                            {"label":  [
+                                                    html.Img(src="/assets/temperature-arrow-up-solid.svg", height=20),
+                                                    html.Span("Max. Temp."),
+                                                ], 
+                                                "value": "max_temp"
+                                            },
+                                            {"label":  [
+                                                    html.Img(src="/assets/temperature-half-solid.svg", height=20),
+                                                    html.Span("Mean Temp."),
+                                                ], 
+                                                "value": "mean_temp"
+                                            },
+                                            {"label":  [
+                                                    html.Img(src="/assets/temperature-arrow-down-solid.svg", height=20),
+                                                    html.Span("Min. Temp."),
+                                                ], 
+                                                "value": "min_temp"
+                                            },
+                                            {"label":  [
+                                                    html.Img(src="/assets/droplet-solid.svg", height=20),
+                                                    html.Span("Acc. Precip."),
+                                                ], 
+                                                "value": "acc_precip"
+                                            },
+                                            {"label":  [
+                                                    html.Img(src="/assets/wind-solid.svg", height=20),
+                                                    html.Span("Mean Wind"),
+                                                ], 
+                                                "value": "mean_wind"
+                                            },
                                         ],
                                         value="mean_temp",
+                                        className="options",
                                         labelStyle={'display': 'block', 'fontSize': '18px', 'marginTop': "5px"}
                                     )
                                 ],
                                 style={"flex": "1", "margin": "10px"}
                             ),
-                            # Toggle switch container
-                            html.Div(
-                                children=[
-                                    # The toggle switch
-                                    daq.BooleanSwitch(
-                                        id="map-parameter-toggle",
-                                        on=False,  # Set default state here
-                                        color="purple",
-                                        style={"verticalAlign": "middle"}
-                                    ),
-                                    # Label that will update based on the toggle state
-                                    html.Div(
-                                        id="map-parameter-toggle-label",
-                                        children="",
-                                        style={"fontSize": "16px", "fontWeight": "bold", "marginRight": "10px"}
-                                    ),
-                                ],
-                                style={"display": "flex", "alignItems": "center"}
-                            ),
                             # Right side: New subparameter selection with four buttons
                             html.Div(
                                 children=[
                                     html.Label(
-                                        "Sub-Parameter:",
-                                        style={"fontSize": "18px", "fontWeight": "bold", "margin": "0px"}
+                                        [
+                                            html.Img(src="/assets/chart-column-solid.svg", height=25),
+                                            html.Span("Parameter:", style={'padding-left': 5}),
+                                        ],
+                                        style={ "fontWeight": "bold", "margin": "0px", "display": "flex", "alignItems": "center"}
                                     ),
                                     dcc.RadioItems(
                                         id="parameter-dropdown2",
                                         options=[
-                                            {"label": "Ice Days", "value": "ice_para"},
-                                            {"label": "Heat. Deg. Days", "value": "heat_para"},
-                                            {"label": "Summer Days", "value": "summer_para"},
-                                            {"label": "Extreme Rain Days", "value": "extrain_para"},
-                                            {"label": "Max. Wind Speed 10 min.", "value": "maxwind_para"},
-                                            {"label": "Bright Sunshine", "value": "brightsun_para"}
+                                            {"label":  [
+                                                    html.Img(src="/assets/snowflake-solid.svg", height=20),
+                                                    html.Span("Ice Days"),
+                                                ], 
+                                                "value": "ice_para"
+                                            },
+                                            {"label":  [
+                                                    html.Img(src="/assets/mitten-solid.svg", height=20),
+                                                    html.Span("Heat. Deg. Days"),
+                                                ], 
+                                                "value": "heat_para"
+                                            },
+                                            {"label":  [
+                                                    html.Img(src="/assets/sun-solid.svg", height=20),
+                                                    html.Span("Summer Days"),
+                                                ], 
+                                                "value": "summer_para"
+                                            },
+                                            {"label":  [
+                                                    html.Img(src="/assets/cloud-showers-water-solid.svg", height=20),
+                                                    html.Span("Extreme Rain Days"),
+                                                ], 
+                                                "value": "extrain_para"
+                                            },
+                                            {"label":  [
+                                                    html.Img(src="/assets/wind-solid.svg", height=20),
+                                                    html.Span("Max. Wind"),
+                                                ], 
+                                                "value": "maxwind_para"
+                                            },
+                                            {"label":  [
+                                                    html.Img(src="/assets/sun-regular.svg", height=20),
+                                                    html.Span("Bright Sunshine"),
+                                                ], 
+                                                "value": "brightsun_para"
+                                            },
                                         ],
                                         value="heat_para",
-                                        labelStyle={'display': 'block', 'fontSize': '18px', 'marginTop': "5px"}
-                                    )
+                                        labelStyle={"display": "flex", "align-items": "center", 'fontSize': '18px', 'marginTop': "5px"},
+                                        className="options",
+                                        style={"marginRight": "15px"}
+                                        # labelStyle={'display': 'block', 'fontSize': '18px', 'marginTop': "5px"}
+                                    ),
+                                    html.Div("↘", style={"textAlign": "end"})
                                 ],
-                                style={"flex": "1", "margin": "10px", "display": "flex", "flexDirection": "column"}
+                                style={"margin": "10px", "display": "flex", "flexDirection": "column", "alignSelf": "end"}
                             )
                         ],
                         className="parameters-wrapper"
@@ -197,51 +246,50 @@ app.layout = html.Div(
                         "To select regions, click on map ↓ ", 
                         style={"fontSize": "18px", "font-style": "italic", "margin": "0px"}
                     ),
-                    html.Div(
-                        children=[
-                            # Reset Filters button (unchanged)
-                            html.A(
-                                html.Button(
-                                    id="reset-button",
-                                    style={
-                                        "width": "150px",
-                                        "height": "35px",
-                                        "backgroundColor": "rgba(220, 220, 220, 1)",
-                                        "border": "2px solid rgba(220, 220, 220, 1)",
-                                        "borderRadius": "14px",
-                                        "display": "flex",
-                                        "alignItems": "center",
-                                        "justifyContent": "center",
-                                        "gap": "10px",
-                                        "cursor": "pointer",
-                                        "padding": "6px"
-                                    },
-                                    n_clicks=0,
-                                    title="Reset filters",
-                                    children=[
-                                        html.Img(
-                                            src="/assets/reset.png",
-                                            style={"width": "25px", "height": "25px"}
-                                        ),
-                                        html.Span(
-                                            "Reset Filters",
-                                            style={
-                                                "fontFamily": "Segoe UI, sans-serif",
-                                                "color": "black",
-                                                "fontSize": "16px",
-                                                "fontWeight": "bold"
-                                            }
-                                        )
-                                    ]
-                                ),
-                                href="/",
-                                style={"textDecoration": "none", "margin": "10px 6px"}
-                            ),
-                        ],
-                        style={"display": "flex", "alignItems": "center"}
-                    )
+                    # html.Div(
+                    #     children=[
+                    #         # Reset Filters button (unchanged)
+                    #         html.A(
+                    #             html.Button(
+                    #                 id="reset-button",
+                    #                 style={
+                    #                     "width": "150px",
+                    #                     "height": "35px",
+                    #                     "backgroundColor": "rgba(220, 220, 220, 1)",
+                    #                     "border": "2px solid rgba(220, 220, 220, 1)",
+                    #                     "borderRadius": "14px",
+                    #                     "display": "flex",
+                    #                     "alignItems": "center",
+                    #                     "justifyContent": "center",
+                    #                     "gap": "10px",
+                    #                     "cursor": "pointer",
+                    #                     "padding": "6px"
+                    #                 },
+                    #                 n_clicks=0,
+                    #                 title="Reset filters",
+                    #                 children=[
+                    #                     html.Img(
+                    #                         src="/assets/reset.png",
+                    #                         style={"width": "25px", "height": "25px"}
+                    #                     ),
+                    #                     html.Span(
+                    #                         "Reset Filters",
+                    #                         style={
+                    #                             "fontFamily": "Segoe UI, sans-serif",
+                    #                             "color": "black",
+                    #                             "fontSize": "16px",
+                    #                             "fontWeight": "bold"
+                    #                         }
+                    #                     )
+                    #                 ]
+                    #             ),
+                    #             href="/",
+                    #             style={"textDecoration": "none", "margin": "10px 6px"}
+                    #         ),
+                    #     ],
+                    #     style={"display": "flex", "alignItems": "center"}
+                    # )
                 ], className="menu"),
-                html.Button("Reset Zoom", id="reset-zoom", n_clicks=0),
             ], className="menuWrapper"),
             html.Div([
                 dcc.Graph(id="trend-map", style={"width": "100%", "height": "100%", "position": "relative", "z-index": "1"}, config={"displayModeBar": False},),
@@ -255,11 +303,63 @@ app.layout = html.Div(
                             ],
                             value="municipality",  # Default mode
                             labelStyle={'display': 'block', 'font-size': '18px'},
+                            className="options"
                         )
                     ], style={
                         "position": "absolute",
                         "top": "21px",
                         "left": "11px",
+                        "z-index": "2",
+                        "background": "rgba(255, 255, 255, 0.7)",
+                        "padding": "10px",
+                        "border-radius": "5px",
+                        "box-shadow": "0 2px 5px rgba(0,0,0,0.2)",
+                    }),
+                    # Toggle switch container
+                    # html.Div(
+                    #     children=[
+                    #         # The toggle switch
+                    #         daq.BooleanSwitch(
+                    #             id="map-parameter-toggle",
+                    #             on=False,  # Set default state here
+                    #             color="purple",
+                    #             style={"verticalAlign": "middle"}
+                    #         ),
+                    #         # Label that will update based on the toggle state
+                    #         html.Div(
+                    #             id="map-parameter-toggle-label",
+                    #             children="Show main parameters on map",
+                    #             style={"fontSize": "16px", "fontWeight": "bold", "marginRight": "10px"}
+                    #         ),
+                    #     ],
+                    #     style={"display": "none", "alignItems": "center"}
+                    # ),
+                     html.Div([
+                        html.Label("Parameters on map:", style={"fontSize": "18px", "fontWeight": "bold", "marginBottom": "5px"}),
+                        dcc.RadioItems(
+                            id="map-parameter-select",
+                            options=[
+                                 {"label":  [
+                                        html.Img(src="/assets/chart-line-solid.svg", height=20),
+                                        html.Span("Measurements"),
+                                    ], 
+                                    "value": "main"
+                                },
+                                {"label":  [
+                                        html.Img(src="/assets/chart-column-solid.svg", height=20),
+                                        html.Span("Derrived Params"),
+                                    ], 
+                                    "value": "sub"
+                                },
+                            ],
+                            value="main",  # Default mode
+                            labelStyle={'display': 'block', 'font-size': '18px'},
+                            className="options"
+                        )
+                    ], style={
+                        "position": "absolute",
+                        "top": "21px",
+                        "right": "110px",
                         "z-index": "2",
                         "background": "rgba(255, 255, 255, 0.7)",
                         "padding": "10px",
@@ -276,26 +376,29 @@ app.layout = html.Div(
                     style={"width": "100%", "height": "100%", "margin": "0px"},
                     config={"displayModeBar": False}
                 ),
-                html.Div(
+                html.Label(
+                    id="dynamic-label-timeline",
+                    className="dynamic-label",
+                    style={"top": "11px"}
+                ),
+                html.Div([
                     dcc.Checklist(
                         id="trendline-toggle",
                         options=[{"label": "Show Trendlines", "value": "show"}],
                         value=["show"],
                         labelStyle={"fontSize": "16px", "fontWeight": "bold"}
                     ),
-                    style={
-                        "position": "absolute",
-                        "top": "5px",
-                        "right": "5px",
-                        "backgroundColor": "rgba(255,255,255,0.7)",
-                        "padding": "5px",
-                        "borderRadius": "5px",
-                        "zIndex": "3"
-                    }
+                    dcc.Checklist(
+                        id="relative-values-toggle",
+                        options=[{"label": "Use Relative Values", "value": "use"}],
+                        value=[],
+                        labelStyle={"fontSize": "16px", "fontWeight": "bold"}
+                    )],
+                    className="chartOptions"
                 )
             ], className="lineChartWrapper"),
-            html.Div([
-            ], className="timeSlideWrapper"),
+            # html.Div([
+            # ], className="timeSlideWrapper"),
             html.Div([
                 dcc.Graph(
                     id="bar_chart",
@@ -303,23 +406,34 @@ app.layout = html.Div(
                     config={"displayModeBar": False},
                 ),
                 html.Label(
-                    id="dynamic-label",
-                    style={
-                        "fontSize": "18px",
-                        "fontWeight": "bold",
-                        "margin": "0px",
-                        "marginRight": "10px",
-                        "position": "absolute",
-                        "top": "5px",
-                        "left": "5px"
-                    }
+                    id="dynamic-label-barchart",
+                    className="dynamic-label"
                 ),
-                dcc.Checklist(
-                    id="barchart-toggle",
-                    options=[{"label": "Show Trendlines", "value": "show"}],
-                    value=["show"],
-                    labelStyle={"fontSize": "16px", "fontWeight": "bold"},
-                    style={"position": "absolute", "top": "5px", "right": "5px"}
+                html.Div(
+                    [
+                        dcc.Checklist(
+                            id="barchart-toggle",
+                            options=[{"label": "Show Trendlines", "value": "show"}],
+                            value=["show"],
+                            labelStyle={"fontSize": "16px", "fontWeight": "bold"},
+                        ),
+                        html.Button([
+                             html.Img(
+                                src="/assets/reset.png",
+                                style={"width": "20px", "height": "20px"}
+                            ),
+                            html.Span(
+                                "Reset Zoom",
+                            )
+                        ], id="reset-zoom", n_clicks=0, className="resetButton scale-on-hover"),
+                        # dcc.Checklist(
+                        #     id="relative-values-toggle-barchart",
+                        #     options=[{"label": "Use Relative Values", "value": "use"}],
+                        #     value=["use"],
+                        #     labelStyle={"fontSize": "16px", "fontWeight": "bold"}
+                        # ),
+                    ],
+                    className="chartOptions"
                 ),
             ], className="barChartWrapper"),
         ]
@@ -331,12 +445,12 @@ app.layout = html.Div(
 # Colors for municipalities
 COLOR_PALETTE = ["gold", "coral", "mediumpurple"]
 
-@app.callback(
-    Output("map-parameter-toggle-label", "children"),
-    Input("map-parameter-toggle", "on")
-)
-def update_toggle_label(is_on):
-    return "Display sub-parameters"
+# @app.callback(
+#     Output("map-parameter-toggle-label", "children"),
+#     Input("map-parameter-toggle", "on")
+# )
+# def update_toggle_label(is_on):
+#     return "Display sub-parameters" if is_on else "Display main parameters"
 
 @app.callback(
     Output("info-sheet", "style"),
@@ -453,12 +567,12 @@ def update_selected_months(tempwheel_clickData, selected_months):
      Input("parameter-dropdown2", "value"),
      Input("year-slider", "value"),
      Input("selected-months", "data"),
-     Input("map-parameter-toggle", "on")]
+     Input("map-parameter-select", "value")]
 )
-def update_temp_wheel(parameter, parameter2, selected_years, selected_months, toggle_state):
+def update_temp_wheel(parameter, parameter2, selected_years, selected_months, map_parameter):
     selected_year_1, selected_year_2 = sorted(selected_years)
-    
-    if toggle_state:
+
+    if map_parameter == "sub":
         data = parameter_grid
         parameter = parameter2
     else:
@@ -487,7 +601,7 @@ def update_temp_wheel(parameter, parameter2, selected_years, selected_months, to
         for value in trend_values
     ]
 
-    if toggle_state:
+    if map_parameter == "sub":
         # Dynamically choose colorscale
         colorscale = px.colors.diverging.PiYG
         colors = sample_colorscale(colorscale, normalized_trends)
@@ -517,17 +631,34 @@ def update_temp_wheel(parameter, parameter2, selected_years, selected_months, to
         values=[1] * 12,
         textinfo="label",
         hoverinfo="label",
+        insidetextorientation='radial',
+        name="Test",
         marker=dict(colors=colors),
         hole=0.4,
         pull=highlight_pull,
         direction="clockwise")
     )
 
+    PARAMETERS = {
+        "mean_temp": "Mean Temperature (°C)",
+        "acc_precip": "Accumulated Precipitation (mm)",
+        "max_temp": "Maximum Temperature (°C)",
+        "min_temp": "Minimum Temperature (°C)",
+        "mean_wind": "Mean Wind Speed (m/s)",
+        "ice_para": "Ice Days",
+        "heat_para": "Heating Degree Days",
+        "summer_para": "Summer days",
+        "extrain_para": "Extreme Rain Days",
+        "maxwind_para": "Max. Wind Speed 10 min. (m/s)",
+        "brightsun_para": "Bright Sunshine (hr)"
+    }
+
     temp_wheel.update_layout(
         font=dict(family="Segoe UI, sans-serif"),
         margin=dict(t=20, r=20, b=20, l=20),
         showlegend=False,
-        paper_bgcolor="rgba(0, 0, 0, 0)"
+        paper_bgcolor="rgba(0, 0, 0, 0)",
+        annotations=[dict(text=PARAMETERS.get(parameter).replace(" ", "<br>"), x=0.5, y=0.5, font_size=16, showarrow=False, xanchor="center")],
     )
     
     temp_wheel.update_traces(
@@ -546,9 +677,9 @@ def update_temp_wheel(parameter, parameter2, selected_years, selected_months, to
      Input("year-slider", "value"),
      Input("selected-months", "data"),
      Input("selected-regions", "data"),
-     Input("map-parameter-toggle", "on")]
+     Input("map-parameter-select", "value")]
 )
-def update_trend_map(mode, parameter_main, parameter_sub, selected_years, selected_months, selected_regions, toggle_state):
+def update_trend_map(mode, parameter_main, parameter_sub, selected_years, selected_months, selected_regions, map_parameter):
     selected_year_1, selected_year_2 = sorted(selected_years)
     
     # Mapping of parameters to user-friendly names
@@ -566,7 +697,7 @@ def update_trend_map(mode, parameter_main, parameter_sub, selected_years, select
         "brightsun_para": "Bright Sunshine (hr)"
     }
 
-    if toggle_state:
+    if map_parameter == "sub":
         parameter = parameter_sub
         if mode == "grid":
             data = parameter_grid
@@ -778,13 +909,13 @@ def update_trend_map(mode, parameter_main, parameter_sub, selected_years, select
      Input("selected-regions", "data"),
      Input("visualization-mode", "value"),
      Input("trendline-toggle", "value"),
+     Input("relative-values-toggle", "value"),
      Input("selected_year", "data")]
 )
-def update_timeline(parameter, selected_months, selected_regions, mode, trendline_toggle, selected_year):
+def update_timeline(parameter, selected_months, selected_regions, visualization_mode, trendline_toggle, use_relatives, selected_year):
+
     # Set a top margin to move the chart a bit up (and remove an overall title)
     layout_margins = dict(t=50)
-    
-    print(selected_year)
     
     # Define parameters for the bar charts
     # Mapping for display names and units
@@ -831,6 +962,12 @@ def update_timeline(parameter, selected_months, selected_regions, mode, trendlin
             monthly_data = filtered_data.groupby("month")[list(PARAMETERS.keys())].mean().reset_index()
             line_data = monthly_data
             line_dis = "month"
+
+        min_value = filtered_data[parameter].min()
+        max_value = filtered_data[parameter].max()
+
+        min_value_precip = filtered_data["acc_precip"].min()
+        max_value_precip = filtered_data["acc_precip"].max()
                     
         # Create figure layout
         fig = go.Figure()
@@ -984,7 +1121,7 @@ def update_timeline(parameter, selected_months, selected_regions, mode, trendlin
                 title="Temperature (°C)",
                 side="left",
                 gridcolor="lightgrey",
-                range=[-20,30],
+                range=([min_value-1, max_value+1] if "use" in use_relatives else None),
                 zeroline=True,
                 zerolinewidth=2,
                 zerolinecolor="lightgrey",
@@ -994,7 +1131,8 @@ def update_timeline(parameter, selected_months, selected_regions, mode, trendlin
                 title="Accumulated Precipitation (mm)",
                 overlaying="y",
                 side="right",
-                range=[0,150],
+                # range=[0,150],
+                 range=([min_value_precip-5, max_value_precip+5] if "use" in use_relatives else None),
                 showgrid=False,
                 dtick=15
             ),
@@ -1007,7 +1145,7 @@ def update_timeline(parameter, selected_months, selected_regions, mode, trendlin
                 yanchor="top"  # Anchor the legend at the top
             ),
             dragmode = False,
-            margin=dict(l=40, r=40, t=40, b=40),
+            margin=dict(l=40, r=40, t=40, b=20),
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
         )
@@ -1188,282 +1326,282 @@ def update_timeline(parameter, selected_months, selected_regions, mode, trendlin
         )
     return fig
 
-@app.callback(
-    Output("overview-chart", "figure"),
-    [Input("visualization-mode", "value"),
-     Input("selected-regions", "data"),
-     Input("parameter-dropdown", "value")]
-)
-def update_monthly_trend_graph(mode, selected_regions, parameter):
-    # Case 1: No regions selected
-    if not selected_regions:
-        # Use defined climate normals (1981–2010) and Denmark data (2011–2024)
-        data_denmark_2011_2024 = data_grid[(data_grid["year"] >= 2011) & (data_grid["year"] <= 2024)]
+# @app.callback(
+#     Output("overview-chart", "figure"),
+#     [Input("visualization-mode", "value"),
+#      Input("selected-regions", "data"),
+#      Input("parameter-dropdown", "value")]
+# )
+# def update_monthly_trend_graph(mode, selected_regions, parameter):
+#     # Case 1: No regions selected
+#     if not selected_regions:
+#         # Use defined climate normals (1981–2010) and Denmark data (2011–2024)
+#         data_denmark_2011_2024 = data_grid[(data_grid["year"] >= 2011) & (data_grid["year"] <= 2024)]
 
-        # Aggregate Denmark data for 2011–2024
-        monthly_stats_denmark = data_denmark_2011_2024.groupby("month").agg({
-            "mean_temp": "mean",
-            "acc_precip": "mean",
-            "max_temp": "mean",
-            "min_temp": "mean"
-        }).reset_index()
+#         # Aggregate Denmark data for 2011–2024
+#         monthly_stats_denmark = data_denmark_2011_2024.groupby("month").agg({
+#             "mean_temp": "mean",
+#             "acc_precip": "mean",
+#             "max_temp": "mean",
+#             "min_temp": "mean"
+#         }).reset_index()
 
-        # Month names for x-axis
-        month_map = {
-            1: "January", 2: "February", 3: "March", 4: "April",
-            5: "May", 6: "June", 7: "July", 8: "August",
-            9: "September", 10: "October", 11: "November", 12: "December"
-        }
-        monthly_stats_denmark["month_name"] = monthly_stats_denmark["month"].map(month_map)
+#         # Month names for x-axis
+#         month_map = {
+#             1: "January", 2: "February", 3: "March", 4: "April",
+#             5: "May", 6: "June", 7: "July", 8: "August",
+#             9: "September", 10: "October", 11: "November", 12: "December"
+#         }
+#         monthly_stats_denmark["month_name"] = monthly_stats_denmark["month"].map(month_map)
 
-        # Define x-axis title
-        x_axis_title = "Denmark Monthly Averages (1981–2010 vs. 2011–2024)"
+#         # Define x-axis title
+#         x_axis_title = "Denmark Monthly Averages (1981–2010 vs. 2011–2024)"
         
-        # Climate normals data
-        climate_normals = pd.DataFrame({
-            "month": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
-            "mean_max_temp": [3.1, 3.2, 5.8, 10.6, 15.3, 18.1, 20.9, 20.8, 16.7, 12.1, 7.3, 4.1],
-            "mean_temp": [1.1, 1.0, 2.9, 6.7, 11.2, 14.1, 16.6, 16.5, 13.1, 9.2, 5.1, 2.1],
-            "mean_min_temp": [-1.3, -1.4, 0.0, 3.0, 7.0, 10.1, 12.5, 12.5, 9.6, 6.2, 2.6, -0.4],
-            "mean_acc_precip": [65, 48, 52, 37, 49, 62, 63, 76, 74, 85, 70, 67]
-        })
+#         # Climate normals data
+#         climate_normals = pd.DataFrame({
+#             "month": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+#             "mean_max_temp": [3.1, 3.2, 5.8, 10.6, 15.3, 18.1, 20.9, 20.8, 16.7, 12.1, 7.3, 4.1],
+#             "mean_temp": [1.1, 1.0, 2.9, 6.7, 11.2, 14.1, 16.6, 16.5, 13.1, 9.2, 5.1, 2.1],
+#             "mean_min_temp": [-1.3, -1.4, 0.0, 3.0, 7.0, 10.1, 12.5, 12.5, 9.6, 6.2, 2.6, -0.4],
+#             "mean_acc_precip": [65, 48, 52, 37, 49, 62, 63, 76, 74, 85, 70, 67]
+#         })
         
-        # Create the figure
-        fig = go.Figure()
+#         # Create the figure
+#         fig = go.Figure()
 
-        # Climate normals data
-        fig.add_trace(go.Scatter(
-            x=climate_normals["month"],
-            y=climate_normals["mean_max_temp"],
-            mode="lines+markers",
-            name="Max. Temp. (1981–2010)",
-            line=dict(color="firebrick", dash="dash", width=3),
-            yaxis="y1",
-            hovertemplate="Value: %{y:.2f} °C<br>Period: 1981-2010<br>Parameter: Max Temp<extra></extra>"
-        ))
-        fig.add_trace(go.Scatter(
-            x=climate_normals["month"],
-            y=climate_normals["mean_temp"],
-            mode="lines+markers",
-            name="Mean Temp. (1981–2010)",
-            line=dict(color="orange", dash="dash", width=3),
-            yaxis="y1",
-            hovertemplate="Value: %{y:.2f} °C<br>Period: 1981-2010<br>Parameter: Mean Temp<extra></extra>"
-        ))
-        fig.add_trace(go.Scatter(
-            x=climate_normals["month"],
-            y=climate_normals["mean_min_temp"],
-            mode="lines+markers",
-            name="Min. Temp. (1981–2010)",
-            line=dict(color="darkblue", dash="dash", width=3),
-            yaxis="y1",
-            hovertemplate="Value: %{y:.2f} °C<br>Period: 1981-2010<br>Parameter: Min Temp<extra></extra>"
-        ))
-        fig.add_trace(go.Bar(
-            x=climate_normals["month"],
-            y=climate_normals["mean_acc_precip"],
-            name="Acc. Precipitation (1981–2010)",
-            marker_color="lightblue",
-            opacity=0.6,
-            yaxis="y2",
-            hovertemplate="Value: %{y:.2f} mm<br>Period: 1981-2010<br>Parameter: Acc. Precip.<extra></extra>"
-        ))
+#         # Climate normals data
+#         fig.add_trace(go.Scatter(
+#             x=climate_normals["month"],
+#             y=climate_normals["mean_max_temp"],
+#             mode="lines+markers",
+#             name="Max. Temp. (1981–2010)",
+#             line=dict(color="firebrick", dash="dash", width=3),
+#             yaxis="y1",
+#             hovertemplate="Value: %{y:.2f} °C<br>Period: 1981-2010<br>Parameter: Max Temp<extra></extra>"
+#         ))
+#         fig.add_trace(go.Scatter(
+#             x=climate_normals["month"],
+#             y=climate_normals["mean_temp"],
+#             mode="lines+markers",
+#             name="Mean Temp. (1981–2010)",
+#             line=dict(color="orange", dash="dash", width=3),
+#             yaxis="y1",
+#             hovertemplate="Value: %{y:.2f} °C<br>Period: 1981-2010<br>Parameter: Mean Temp<extra></extra>"
+#         ))
+#         fig.add_trace(go.Scatter(
+#             x=climate_normals["month"],
+#             y=climate_normals["mean_min_temp"],
+#             mode="lines+markers",
+#             name="Min. Temp. (1981–2010)",
+#             line=dict(color="darkblue", dash="dash", width=3),
+#             yaxis="y1",
+#             hovertemplate="Value: %{y:.2f} °C<br>Period: 1981-2010<br>Parameter: Min Temp<extra></extra>"
+#         ))
+#         fig.add_trace(go.Bar(
+#             x=climate_normals["month"],
+#             y=climate_normals["mean_acc_precip"],
+#             name="Acc. Precipitation (1981–2010)",
+#             marker_color="lightblue",
+#             opacity=0.6,
+#             yaxis="y2",
+#             hovertemplate="Value: %{y:.2f} mm<br>Period: 1981-2010<br>Parameter: Acc. Precip.<extra></extra>"
+#         ))
 
-        # Denmark 2011–2024 data
-        fig.add_trace(go.Scatter(
-            x=monthly_stats_denmark["month_name"],
-            y=monthly_stats_denmark["max_temp"],
-            mode="lines+markers",
-            name="Max. Temp. (2011–2024)",
-            line=dict(color="firebrick", width=3),
-            yaxis="y1",
-            hovertemplate="Value: %{y:.2f} °C <br>Period: 2011-2024<br>Parameter: Max. Temp<extra></extra>"
-        ))
-        fig.add_trace(go.Scatter(
-            x=monthly_stats_denmark["month_name"],
-            y=monthly_stats_denmark["mean_temp"],
-            mode="lines+markers",
-            name="Mean Temp. (2011–2024)",
-            line=dict(color="orange", width=3),
-            yaxis="y1",
-            hovertemplate="Value: %{y:.2f} °C <br>Period: 2011-2024<br>Parameter: Mean Temp<extra></extra>"
-        ))
-        fig.add_trace(go.Scatter(
-            x=monthly_stats_denmark["month_name"],
-            y=monthly_stats_denmark["min_temp"],
-            mode="lines+markers",
-            name="Min. Temp. (2011–2024)",
-            line=dict(color="darkblue", width=3),
-            yaxis="y1",
-            hovertemplate="Value: %{y:.2f} °C <br>Period: 2011-2024<br>Parameter: Min. Temp<extra></extra>"
-        ))
-        fig.add_trace(go.Bar(
-            x=monthly_stats_denmark["month_name"],
-            y=monthly_stats_denmark["acc_precip"],
-            name="Acc. Precipitation (2011–2024)",
-            marker_color="teal",
-            opacity=0.4,
-            yaxis="y2",
-            hovertemplate="Value: %{y:.2f} mm <br>Period: 2011-2024<br>Parameter: Acc. Precip.<extra></extra>"
-        ))
-    else:
-        # Case 2: Regions selected
-        data = data_grid if mode == "grid" else data_municipality
-        filtered_data = data[data["cell_id"].isin(selected_regions)]
+#         # Denmark 2011–2024 data
+#         fig.add_trace(go.Scatter(
+#             x=monthly_stats_denmark["month_name"],
+#             y=monthly_stats_denmark["max_temp"],
+#             mode="lines+markers",
+#             name="Max. Temp. (2011–2024)",
+#             line=dict(color="firebrick", width=3),
+#             yaxis="y1",
+#             hovertemplate="Value: %{y:.2f} °C <br>Period: 2011-2024<br>Parameter: Max. Temp<extra></extra>"
+#         ))
+#         fig.add_trace(go.Scatter(
+#             x=monthly_stats_denmark["month_name"],
+#             y=monthly_stats_denmark["mean_temp"],
+#             mode="lines+markers",
+#             name="Mean Temp. (2011–2024)",
+#             line=dict(color="orange", width=3),
+#             yaxis="y1",
+#             hovertemplate="Value: %{y:.2f} °C <br>Period: 2011-2024<br>Parameter: Mean Temp<extra></extra>"
+#         ))
+#         fig.add_trace(go.Scatter(
+#             x=monthly_stats_denmark["month_name"],
+#             y=monthly_stats_denmark["min_temp"],
+#             mode="lines+markers",
+#             name="Min. Temp. (2011–2024)",
+#             line=dict(color="darkblue", width=3),
+#             yaxis="y1",
+#             hovertemplate="Value: %{y:.2f} °C <br>Period: 2011-2024<br>Parameter: Min. Temp<extra></extra>"
+#         ))
+#         fig.add_trace(go.Bar(
+#             x=monthly_stats_denmark["month_name"],
+#             y=monthly_stats_denmark["acc_precip"],
+#             name="Acc. Precipitation (2011–2024)",
+#             marker_color="teal",
+#             opacity=0.4,
+#             yaxis="y2",
+#             hovertemplate="Value: %{y:.2f} mm <br>Period: 2011-2024<br>Parameter: Acc. Precip.<extra></extra>"
+#         ))
+#     else:
+#         # Case 2: Regions selected
+#         data = data_grid if mode == "grid" else data_municipality
+#         filtered_data = data[data["cell_id"].isin(selected_regions)]
 
-        # Split data into two periods
-        data_2011_2017 = filtered_data[(filtered_data["year"] >= 2011) & (filtered_data["year"] <= 2017)]
-        data_2018_2024 = filtered_data[(filtered_data["year"] >= 2018) & (filtered_data["year"] <= 2024)]
+#         # Split data into two periods
+#         data_2011_2017 = filtered_data[(filtered_data["year"] >= 2011) & (filtered_data["year"] <= 2017)]
+#         data_2018_2024 = filtered_data[(filtered_data["year"] >= 2018) & (filtered_data["year"] <= 2024)]
 
-        # Aggregate data for each period
-        monthly_stats_2011_2017 = data_2011_2017.groupby("month").agg({
-            "mean_temp": "mean",
-            "acc_precip": "mean",
-            "max_temp": "mean",
-            "min_temp": "mean"
-        }).reset_index()
-        monthly_stats_2018_2024 = data_2018_2024.groupby("month").agg({
-            "mean_temp": "mean",
-            "acc_precip": "mean",
-            "max_temp": "mean",
-            "min_temp": "mean"
-        }).reset_index()
+#         # Aggregate data for each period
+#         monthly_stats_2011_2017 = data_2011_2017.groupby("month").agg({
+#             "mean_temp": "mean",
+#             "acc_precip": "mean",
+#             "max_temp": "mean",
+#             "min_temp": "mean"
+#         }).reset_index()
+#         monthly_stats_2018_2024 = data_2018_2024.groupby("month").agg({
+#             "mean_temp": "mean",
+#             "acc_precip": "mean",
+#             "max_temp": "mean",
+#             "min_temp": "mean"
+#         }).reset_index()
 
-        # Month names for x-axis
-        month_map = {
-            1: "January", 2: "February", 3: "March", 4: "April",
-            5: "May", 6: "June", 7: "July", 8: "August",
-            9: "September", 10: "October", 11: "November", 12: "December"
-        }
-        monthly_stats_2011_2017["month_name"] = monthly_stats_2011_2017["month"].map(month_map)
-        monthly_stats_2018_2024["month_name"] = monthly_stats_2018_2024["month"].map(month_map)
+#         # Month names for x-axis
+#         month_map = {
+#             1: "January", 2: "February", 3: "March", 4: "April",
+#             5: "May", 6: "June", 7: "July", 8: "August",
+#             9: "September", 10: "October", 11: "November", 12: "December"
+#         }
+#         monthly_stats_2011_2017["month_name"] = monthly_stats_2011_2017["month"].map(month_map)
+#         monthly_stats_2018_2024["month_name"] = monthly_stats_2018_2024["month"].map(month_map)
 
-        # Define x-axis title
-        region_names = [
-            next(
-                (f["properties"]["municipality"] for f in geojson_municipality_data["features"] if f["properties"]["cell_id"] == region),
-                f"{region}"
-            )
-            for region in selected_regions
-        ]
-        x_axis_title = f"Monthly average across regions: {', '.join(region_names)}"
+#         # Define x-axis title
+#         region_names = [
+#             next(
+#                 (f["properties"]["municipality"] for f in geojson_municipality_data["features"] if f["properties"]["cell_id"] == region),
+#                 f"{region}"
+#             )
+#             for region in selected_regions
+#         ]
+#         x_axis_title = f"Monthly average across regions: {', '.join(region_names)}"
 
-        # Create the figure
-        fig = go.Figure()
+#         # Create the figure
+#         fig = go.Figure()
 
-        # 2011–2017 data
-        fig.add_trace(go.Scatter(
-            x=monthly_stats_2011_2017["month_name"],
-            y=monthly_stats_2011_2017["max_temp"],
-            mode="lines+markers",
-            name="Max. Temp. (2011–2017)",
-            line=dict(color="firebrick", dash="dash", width=3),
-            yaxis="y1",
-            hovertemplate="Value: %{y:.2f} °C <br>Period: 2011-2017<br>Parameter: Max. Temp.<extra></extra>"
-        ))
-        fig.add_trace(go.Scatter(
-            x=monthly_stats_2011_2017["month_name"],
-            y=monthly_stats_2011_2017["mean_temp"],
-            mode="lines+markers",
-            name="Mean Temp. (2011–2017)",
-            line=dict(color="orange", dash="dash", width=3),
-            yaxis="y1",
-            hovertemplate="Value: %{y:.2f} °C<br>Period: 2011-2017<br>Parameter: Mean Temp.<extra></extra>"
-        ))
-        fig.add_trace(go.Scatter(
-            x=monthly_stats_2011_2017["month_name"],
-            y=monthly_stats_2011_2017["min_temp"],
-            mode="lines+markers",
-            name="Min. Temp. (2011–2017)",
-            line=dict(color="darkblue", dash="dash", width=3),
-            yaxis="y1",
-            hovertemplate="Value: %{y:.2f} °C<br>Period: 2011-2017<br>Parameter: Min. Temp.<extra></extra>"
-        ))
-        fig.add_trace(go.Bar(
-            x=monthly_stats_2011_2017["month_name"],
-            y=monthly_stats_2011_2017["acc_precip"],
-            name="Acc. Precipitation (2011–2017)",
-            marker_color="lightblue",
-            opacity=0.4,
-            yaxis="y2",
-            hovertemplate="Value: %{y:.2f} mm<br>Period: 2011-2017<br>Parameter: Acc. Precip.<extra></extra>"
-        ))
+#         # 2011–2017 data
+#         fig.add_trace(go.Scatter(
+#             x=monthly_stats_2011_2017["month_name"],
+#             y=monthly_stats_2011_2017["max_temp"],
+#             mode="lines+markers",
+#             name="Max. Temp. (2011–2017)",
+#             line=dict(color="firebrick", dash="dash", width=3),
+#             yaxis="y1",
+#             hovertemplate="Value: %{y:.2f} °C <br>Period: 2011-2017<br>Parameter: Max. Temp.<extra></extra>"
+#         ))
+#         fig.add_trace(go.Scatter(
+#             x=monthly_stats_2011_2017["month_name"],
+#             y=monthly_stats_2011_2017["mean_temp"],
+#             mode="lines+markers",
+#             name="Mean Temp. (2011–2017)",
+#             line=dict(color="orange", dash="dash", width=3),
+#             yaxis="y1",
+#             hovertemplate="Value: %{y:.2f} °C<br>Period: 2011-2017<br>Parameter: Mean Temp.<extra></extra>"
+#         ))
+#         fig.add_trace(go.Scatter(
+#             x=monthly_stats_2011_2017["month_name"],
+#             y=monthly_stats_2011_2017["min_temp"],
+#             mode="lines+markers",
+#             name="Min. Temp. (2011–2017)",
+#             line=dict(color="darkblue", dash="dash", width=3),
+#             yaxis="y1",
+#             hovertemplate="Value: %{y:.2f} °C<br>Period: 2011-2017<br>Parameter: Min. Temp.<extra></extra>"
+#         ))
+#         fig.add_trace(go.Bar(
+#             x=monthly_stats_2011_2017["month_name"],
+#             y=monthly_stats_2011_2017["acc_precip"],
+#             name="Acc. Precipitation (2011–2017)",
+#             marker_color="lightblue",
+#             opacity=0.4,
+#             yaxis="y2",
+#             hovertemplate="Value: %{y:.2f} mm<br>Period: 2011-2017<br>Parameter: Acc. Precip.<extra></extra>"
+#         ))
 
-        # 2018–2024 data
-        fig.add_trace(go.Scatter(
-            x=monthly_stats_2018_2024["month_name"],
-            y=monthly_stats_2018_2024["max_temp"],
-            mode="lines+markers",
-            name="Max. Temp. (2018-2024)",
-            line=dict(color="firebrick", width=3),
-            yaxis="y1",
-            hovertemplate="Value: %{y:.2f} °C<br>Period: 2018-2024<br>Parameter: Max. Temp.<extra></extra>"
-        ))
-        fig.add_trace(go.Scatter(
-            x=monthly_stats_2018_2024["month_name"],
-            y=monthly_stats_2018_2024["mean_temp"],
-            mode="lines+markers",
-            name="Mean Temp. (2018-2024)",
-            line=dict(color="orange", width=3),
-            yaxis="y1",
-            hovertemplate="Value: %{y:.2f} °C<br>Period: 2018-2024<br>Parameter: Mean Temp.<extra></extra>"
-        ))
-        fig.add_trace(go.Scatter(
-            x=monthly_stats_2018_2024["month_name"],
-            y=monthly_stats_2018_2024["min_temp"],
-            mode="lines+markers",
-            name="Min. Temp. (2018-2024)",
-            line=dict(color="darkblue", width=3),
-            yaxis="y1",
-            hovertemplate="Value: %{y:.2f} °C<br>Period: 2018-2024<br>Parameter: Min. Temp.<extra></extra>"
-        ))
-        fig.add_trace(go.Bar(
-            x=monthly_stats_2018_2024["month_name"],
-            y=monthly_stats_2018_2024["acc_precip"],
-            name="Acc. Precipitation (2018-2024)",
-            marker_color="teal",
-            opacity=0.4,
-            yaxis="y2",
-            hovertemplate="Value: %{y:.2f} mm<br>Period: 2018-2024<br>Parameter: Acc. Precip.<extra></extra>"
-        ))
+#         # 2018–2024 data
+#         fig.add_trace(go.Scatter(
+#             x=monthly_stats_2018_2024["month_name"],
+#             y=monthly_stats_2018_2024["max_temp"],
+#             mode="lines+markers",
+#             name="Max. Temp. (2018-2024)",
+#             line=dict(color="firebrick", width=3),
+#             yaxis="y1",
+#             hovertemplate="Value: %{y:.2f} °C<br>Period: 2018-2024<br>Parameter: Max. Temp.<extra></extra>"
+#         ))
+#         fig.add_trace(go.Scatter(
+#             x=monthly_stats_2018_2024["month_name"],
+#             y=monthly_stats_2018_2024["mean_temp"],
+#             mode="lines+markers",
+#             name="Mean Temp. (2018-2024)",
+#             line=dict(color="orange", width=3),
+#             yaxis="y1",
+#             hovertemplate="Value: %{y:.2f} °C<br>Period: 2018-2024<br>Parameter: Mean Temp.<extra></extra>"
+#         ))
+#         fig.add_trace(go.Scatter(
+#             x=monthly_stats_2018_2024["month_name"],
+#             y=monthly_stats_2018_2024["min_temp"],
+#             mode="lines+markers",
+#             name="Min. Temp. (2018-2024)",
+#             line=dict(color="darkblue", width=3),
+#             yaxis="y1",
+#             hovertemplate="Value: %{y:.2f} °C<br>Period: 2018-2024<br>Parameter: Min. Temp.<extra></extra>"
+#         ))
+#         fig.add_trace(go.Bar(
+#             x=monthly_stats_2018_2024["month_name"],
+#             y=monthly_stats_2018_2024["acc_precip"],
+#             name="Acc. Precipitation (2018-2024)",
+#             marker_color="teal",
+#             opacity=0.4,
+#             yaxis="y2",
+#             hovertemplate="Value: %{y:.2f} mm<br>Period: 2018-2024<br>Parameter: Acc. Precip.<extra></extra>"
+#         ))
 
-    # Update layout
-    fig.update_layout(
-        font=dict(family="Segoe UI, sans-serif", size = 14),
-        xaxis=dict(title=x_axis_title),
-        yaxis=dict(
-            title="Temperature (°C)",
-            side="left",
-            gridcolor="lightgrey",
-            range=[-15,35],
-            zeroline=True,
-            zerolinewidth=2,
-            zerolinecolor="lightgrey",
-            dtick=5
-        ),
-        yaxis2=dict(
-            title="Accumulated Precipitation (mm)",
-            overlaying="y",
-            side="right",
-            range=[0,150],
-            showgrid=False,
-            dtick=15
-        ),
-        barmode="group",
-        legend=dict(
-            x=0,  # Center the legend horizontally
-            y=-0.15,  # Place the legend below the chart
-            orientation="h",  # Horizontal layout
-            xanchor="left",  # Align the legend center horizontally
-            yanchor="top"  # Anchor the legend at the top
-        ),
-        dragmode = False,
-        margin=dict(l=40, r=40, t=40, b=40),
-        paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(0,0,0,0)",
-    )
+#     # Update layout
+#     fig.update_layout(
+#         font=dict(family="Segoe UI, sans-serif", size = 14),
+#         xaxis=dict(title=x_axis_title),
+#         yaxis=dict(
+#             title="Temperature (°C)",
+#             side="left",
+#             gridcolor="lightgrey",
+#             range=[-15,35],
+#             zeroline=True,
+#             zerolinewidth=2,
+#             zerolinecolor="lightgrey",
+#             dtick=5
+#         ),
+#         yaxis2=dict(
+#             title="Accumulated Precipitation (mm)",
+#             overlaying="y",
+#             side="right",
+#             range=[0,150],
+#             showgrid=False,
+#             dtick=15
+#         ),
+#         barmode="group",
+#         legend=dict(
+#             x=0,  # Center the legend horizontally
+#             y=-0.15,  # Place the legend below the chart
+#             orientation="h",  # Horizontal layout
+#             xanchor="left",  # Align the legend center horizontally
+#             yanchor="top"  # Anchor the legend at the top
+#         ),
+#         dragmode = False,
+#         margin=dict(l=40, r=40, t=40, b=40),
+#         paper_bgcolor="rgba(0,0,0,0)",
+#         plot_bgcolor="rgba(0,0,0,0)",
+#     )
 
-    return fig
+#     return fig
 
 
 @app.callback(
@@ -1566,7 +1704,7 @@ def update_bar_chart(selected_months, selected_parameter, selected_regions, mode
                         y=trend_y,
                         mode="lines",
                         name=label,
-                        line=dict(dash="dot", color="red")
+                        line=dict(dash="dot", color="black")
                         ),
                     row=idx, col=1
                     )
@@ -1759,7 +1897,7 @@ def update_bar_chart(selected_months, selected_parameter, selected_regions, mode
     return fig
 
 @app.callback(
-    Output("dynamic-label", "children"),
+    Output("dynamic-label-barchart", "children"),
     [Input("parameter-dropdown2", "value"),
      Input("selected-regions", "data"),
      Input("selected_year", "data"),
@@ -1796,6 +1934,54 @@ def update_label(selected_parameter, selected_regions, selected_year, mode):
     # Create text
     distribution_text = "Yearly" if selected_year == None else "Monthly"
     parameter_text = "all parameters" if len(selected_regions) <= 1 else f"{selected_parameter_name}"
+    region_text = ("in Denmark" if len(selected_regions) == 0 else f"in {region_name}" if len(selected_regions) == 1 else "")
+    year_text = "" if selected_year == None else f"for {selected_year}"
+
+    return f"{distribution_text} distribution of {parameter_text} {region_text} {year_text}"
+
+@app.callback(
+    Output("dynamic-label-timeline", "children"),
+    [Input("parameter-dropdown", "value"),
+     Input("selected-regions", "data"),
+     Input("selected_year", "data"),
+     Input("visualization-mode", "value")]
+)
+def update_label(selected_parameter, selected_regions, selected_year, mode):
+    
+    # Save useful name for regions
+    for region in selected_regions:
+        if mode == "municipality":
+            region_str = str(region)
+            feature = next(
+                (f for f in geojson_municipality_data["features"] 
+                 if str(f["properties"].get("cell_id", "")) == region_str),
+                None
+            )
+            region_name = feature["properties"].get("municipality", f"Region {region}") if feature else f"Region {region}"
+        else:
+            region_name = str(region)
+    
+    # Save useful name for parameters
+    # Define parameters for the bar charts
+    parameters = {
+        "mean_temp": "Mean Temperature (°C)",
+        "acc_precip": "Accumulated Precipitation (mm)",
+        "max_temp": "Maximum Temperature (°C)",
+        "min_temp": "Minimum Temperature (°C)",
+        "mean_wind": "Mean Wind Speed (m/s)",
+        "ice_para": "Ice Days",
+        "heat_para": "Heating Degree Days",
+        "summer_para": "Summer days",
+        "extrain_para": "Extreme Rain Days",
+        "maxwind_para": "Max. Wind Speed 10 min. (m/s)",
+        "brightsun_para": "Bright Sunshine (hr)"
+    }
+    
+    selected_parameter_name = parameters.get(selected_parameter)
+    
+    # Create text
+    distribution_text = "Yearly" if selected_year == None else "Monthly"
+    parameter_text = f"{selected_parameter_name}"
     region_text = ("in Denmark" if len(selected_regions) == 0 else f"in {region_name}" if len(selected_regions) == 1 else "")
     year_text = "" if selected_year == None else f"for {selected_year}"
 
@@ -1925,5 +2111,5 @@ def toggle_usecase_sheets(*args):
     return output_states
 
 if __name__ == "__main__":
-    app.run_server(debug=True, port=5050)
-    #app.run_server(debug=True, port=80, host='0.0.0.0')
+    # app.run_server(debug=True, port=5050)
+    app.run_server(debug=False, port=80, host='0.0.0.0')
