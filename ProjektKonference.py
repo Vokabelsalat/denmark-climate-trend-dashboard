@@ -913,7 +913,7 @@ def update_trend_map(mode, parameter_main, parameter_sub, selected_years, select
      Input("relative-values-toggle", "value"),
      Input("selected_year", "data")]
 )
-def update_timeline(parameter, selected_months, selected_regions, visualization_mode, trendline_toggle, use_relatives, selected_year):
+def update_timeline(parameter, selected_months, selected_regions, mode, trendline_toggle, use_relatives, selected_year):
 
     # Set a top margin to move the chart a bit up (and remove an overall title)
     layout_margins = dict(t=50)
