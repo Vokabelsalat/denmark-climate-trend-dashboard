@@ -244,7 +244,7 @@ app.layout = html.Div(
                     ),
                     html.Label(
                         "To select regions, click on map ↓ ", 
-                        style={"fontSize": "18px", "font-style": "italic", "margin": "0px"}
+                        style={"fontSize": "18px", "font-style": "italic", "margin": "0px", "marginLeft": "10px"}
                     ),
                     # html.Div(
                     #     children=[
@@ -1661,20 +1661,26 @@ def update_bar_chart(selected_months, selected_parameter, selected_regions, mode
             except ValueError:
                 region_color = COLOR_PALETTE[0]
         
+        agg_funcs = { key: ("mean" if key in ["maxwind_para", "brightsun_para"] else "sum")
+              for key in PARAMETERS.keys() }
+
         # Save data (distribution)
         if selected_year == None:
             filtered_data = filtered_data[(filtered_data["month"].isin(selected_months))]
-            yearly_data = filtered_data.groupby("year")[list(PARAMETERS.keys())].sum().reset_index()
+            yearly_data = filtered_data.groupby("year")[list(PARAMETERS.keys())].agg(agg_funcs).reset_index()
             bar_data = yearly_data
             bar_dis = "year"
         else:
             filtered_data = filtered_data[filtered_data["year"] == selected_year]
-            monthly_data = filtered_data.groupby("month")[list(PARAMETERS.keys())].sum().reset_index()
+            monthly_data = filtered_data.groupby("month")[list(PARAMETERS.keys())].agg(agg_funcs).reset_index()
             bar_data = monthly_data
             bar_dis = "month"
 
         # Save Subtitles
-        subplot_titles = [f"Aggregate {label}" for label in PARAMETERS.values()]
+        subplot_titles = [
+            f"{'Average' if key in ['maxwind_para', 'brightsun_para'] else 'Aggregate'} {label}"
+            for key, label in PARAMETERS.items()
+        ]
                     
         # Create figure layout
         fig = make_subplots(
@@ -1739,12 +1745,12 @@ def update_bar_chart(selected_months, selected_parameter, selected_regions, mode
         # Save data (distribution)
         if selected_year == None:
             filtered_data = filtered_data[(filtered_data["month"].isin(selected_months))]
-            yearly_data = filtered_data.groupby("year")[selected_region_or_parameter].sum().reset_index()
+            yearly_data = filtered_data.groupby("year")[list(PARAMETERS.keys())].agg(agg_funcs).reset_index()
             bar_data = yearly_data
             bar_dis = "year"
         else:
             filtered_data = filtered_data[filtered_data["year"] == selected_year]
-            monthly_data = filtered_data.groupby("month")[selected_region_or_parameter].sum().reset_index()
+            monthly_data = filtered_data.groupby("month")[list(PARAMETERS.keys())].agg(agg_funcs).reset_index()
             bar_data = monthly_data
             bar_dis = "month"
       
@@ -1799,12 +1805,12 @@ def update_bar_chart(selected_months, selected_parameter, selected_regions, mode
                 # Save data (distribution) v2
                 if selected_year == None:
                     region_data = region_data[(region_data["month"].isin(selected_months))]
-                    yearly_data = region_data.groupby("year")[selected_region_or_parameter].sum().reset_index()
+                    yearly_data = filtered_data.groupby("year")[list(PARAMETERS.keys())].agg(agg_funcs).reset_index()
                     bar_data = yearly_data
                     bar_dis = "year"
                 else:
                     region_data = region_data[region_data["year"] == selected_year]
-                    monthly_data = region_data.groupby("month")[selected_region_or_parameter].sum().reset_index()
+                    monthly_data = filtered_data.groupby("month")[list(PARAMETERS.keys())].agg(agg_funcs).reset_index() 
                     bar_data = monthly_data
                     bar_dis = "month"
                 
