@@ -1664,8 +1664,6 @@ def update_timeline(parameter, selected_months, selected_regions, mode, trendlin
 #     )
 
 #     return fig
-
-
 @app.callback(
     Output("bar_chart", "figure"),
     [Input("selected-months", "data"),
@@ -1676,112 +1674,147 @@ def update_timeline(parameter, selected_months, selected_regions, mode, trendlin
      Input("barchart-toggle", "value")]
 )
 def update_bar_chart(selected_months, selected_parameter, selected_regions, mode, selected_year, barchart_toggle):
-    # Set a top margin to move the chart a bit up (and remove an overall title)
     layout_margins = dict(t=50)
     
-    # Define parameters for the bar charts
+    # Define parameter labels
     PARAMETERS = {
         "ice_para": "Ice Days",
         "heat_para": "Heating Degree Days",
         "summer_para": "Summer Days",
         "extrain_para": "Extreme Rain Days",
         "maxwind_para": "Max. Wind Speed 10 min.",
-        "brightsun_para": "Bright Sunshine"
+        "brightsun_para": "Bright Sunshine Hours"
     }
-    agg_funcs = { key: ("mean" if key in ["maxwind_para", "brightsun_para"] else "sum")
-          for key in PARAMETERS.keys() }
     
-    # If Denmark / Region POV
+    # Helper function for aggregation.
+    # average_over_grids == True: for DK (national-level), where we average over grids.
+    # average_over_grids == False: for a specific region (sum/average over its data).
+    def aggregate_param(df, p, selected_year, selected_months, average_over_grids):
+        if selected_year is None:
+            # Yearly view: filter to selected months.
+            df = df[df["month"].isin(selected_months)]
+            # First, compute grid-level aggregation per year.
+            if p == "maxwind_para":
+                # For max wind: compute grid means (over selected months)
+                grid_vals = df.groupby(["year", "cell_id"])[p].mean().reset_index()
+            else:
+                # For day counts: sum the days for the selected months per grid.
+                grid_vals = df.groupby(["year", "cell_id"])[p].sum().reset_index()
+            if average_over_grids:
+                # For DK: average across grids.
+                agg_df = grid_vals.groupby("year")[p].mean().reset_index()
+            else:
+                # For a single region: if more than one grid exists, sum them.
+                agg_df = grid_vals.groupby("year")[p].sum().reset_index()
+            x_col = "year"
+        else:
+            # Monthly view: filter to the selected year(s)
+            if isinstance(selected_year, list):
+                df = df[df["year"].isin(selected_year)]
+            else:
+                df = df[df["year"] == selected_year]
+            if p == "maxwind_para":
+                grid_vals = df.groupby(["month", "cell_id"])[p].mean().reset_index()
+            else:
+                grid_vals = df.groupby(["month", "cell_id"])[p].sum().reset_index()
+            if average_over_grids:
+                agg_df = grid_vals.groupby("month")[p].mean().reset_index()
+            else:
+                agg_df = grid_vals.groupby("month")[p].sum().reset_index()
+            x_col = "month"
+        return agg_df, x_col
+    
+    # ------------------------------------------------------------------
+    # CASE 1: Single Region or DK (i.e. if len(selected_regions) <= 1)
     if len(selected_regions) <= 1:
         if len(selected_regions) == 0:
-            # Save POV
-            selected_region_or_parameter = "Denmark"
-
-            # Save data (mode)            
-            filtered_data = parameter_grid[
-                (parameter_grid["year"].between(2011, 2024))
-            ]
+            # No region selected -> DK national-level: average across grids.
+            selected_region = "Denmark"
+            df_data = parameter_grid[parameter_grid["year"].between(2011, 2024)]
             region_color = DK_COLOR
-            
+            avg_over_grids = True
+            # For monthly view, compute benchmark data: average of each parameter by month.
+            if selected_year is not None:
+                temp = df_data.groupby(["cell_id", "month"])[list(PARAMETERS.keys())].sum().reset_index()
+                temp[list(PARAMETERS.keys())] = temp[list(PARAMETERS.keys())] / 14.0
+                benchmark_data = temp.groupby("month")[list(PARAMETERS.keys())].mean().reset_index()
         else:
-            # Save POV
-            selected_region_or_parameter = selected_regions[0]
-            
-            # Save data (mode)
+            # A single region is selected.
+            selected_region = selected_regions[0]
             if mode == "grid":
-                filtered_data = parameter_grid[
-                    (parameter_grid["cell_id"] == selected_region_or_parameter) &
-                    (parameter_grid["year"].between(2011, 2024))
-                ]
+                df_data = parameter_grid[(parameter_grid["cell_id"] == selected_region) & 
+                                         (parameter_grid["year"].between(2011, 2024))]
             else:
-                filtered_data = parameter_municipality[
-                    (parameter_municipality["cell_id"] == selected_region_or_parameter) &
-                    (parameter_municipality["year"].between(2011, 2024))
-                ]
+                df_data = parameter_municipality[(parameter_municipality["cell_id"] == selected_region) & 
+                                                (parameter_municipality["year"].between(2011, 2024))]
             try:
-                idx = selected_regions.index(selected_region_or_parameter)
+                idx = selected_regions.index(selected_region)
                 region_color = COLOR_PALETTE[idx % len(COLOR_PALETTE)]
             except ValueError:
                 region_color = COLOR_PALETTE[0]
-
-        # Save data (distribution)
-        if selected_year == None:
-            filtered_data = filtered_data[(filtered_data["month"].isin(selected_months))]
-            yearly_data = filtered_data.groupby("year")[list(PARAMETERS.keys())].agg(agg_funcs).reset_index()
-            bar_data = yearly_data
-            bar_dis = "year"
-        else:
-            filtered_data = filtered_data[filtered_data["year"] == selected_year]
-            monthly_data = filtered_data.groupby("month")[list(PARAMETERS.keys())].agg(agg_funcs).reset_index()
-            bar_data = monthly_data
-            bar_dis = "month"
-
-        # Save Subtitles
-        subplot_titles = [
-            f"{'Average' if key in ['maxwind_para', 'brightsun_para'] else 'Aggregate'} {label}"
-            for key, label in PARAMETERS.items()
-        ]
-                    
-        # Create figure layout
+            avg_over_grids = False
+        
+            # For monthly view, compute benchmark data: average of each parameter by month.
+            if selected_year is not None:
+                benchmark_data = (df_data.groupby("month")[list(PARAMETERS.keys())].sum() / 14).reset_index()
+        
+        # Create one subplot per parameter.
+        n_params = len(PARAMETERS)
         fig = make_subplots(
-            rows=6, cols=1, shared_xaxes=True,
-            subplot_titles=subplot_titles
+            rows=n_params, cols=1, shared_xaxes=True,
+            subplot_titles=[f"{'Average' if p=='maxwind_para' else 'Aggregate'} {PARAMETERS[p]}" for p in PARAMETERS]
         )
-
-        for idx, (param, label) in enumerate(PARAMETERS.items(), start=1):
+        # Loop over all parameters.
+        for i, p in enumerate(PARAMETERS, start=1):
+            agg_df, x_col = aggregate_param(df_data, p, selected_year, selected_months, avg_over_grids)
             fig.add_trace(
                 go.Bar(
-                    x=bar_data[bar_dis],
-                    y=bar_data[param],
+                    x=agg_df[x_col],
+                    y=agg_df[p],
                     marker_color=region_color,
-                    name=label
+                    name=PARAMETERS[p]
                 ),
-                row=idx, col=1
+                row=i, col=1
             )
-            if barchart_toggle and selected_year == None:
-                x = bar_data[bar_dis]
-                y = bar_data[param]
-                
-                slope, intercept = np.polyfit(x, y, 1)
-                trend_y = slope * x + intercept
-                
+            # Optionally add a trend line in yearly view.
+            if barchart_toggle and selected_year is None:
+                x_vals = agg_df[x_col]
+                y_vals = agg_df[p]
+                slope, intercept = np.polyfit(x_vals, y_vals, 1)
+                trend_y = slope * np.array(x_vals) + intercept
                 fig.add_trace(
                     go.Scatter(
-                        x=x,
+                        x=x_vals,
                         y=trend_y,
                         mode="lines",
-                        name=label,
                         line=dict(dash="dot", color="black")
+                    ),
+                    row=i, col=1
+                )
+            # Add benchmark markers for monthly view.
+            if selected_year is not None:
+                fig.add_trace(
+                    go.Scatter(
+                        x=agg_df[x_col],
+                        y=benchmark_data[p],
+                        mode="markers",
+                        marker=dict(
+                            symbol="line-ew",
+                            color="black",
+                            size=15,
+                            line=dict(width=3, color="black")
                         ),
-                    row=idx, col=1
-                    )
-        
-        
-    else: # If parameter POV / more than 1 selected region
-        # Save POV
-        selected_region_or_parameter = selected_parameter
-        
-        # Save titles for the subplots
+                        name=f"{PARAMETERS[p]} Benchmark",
+                        showlegend=True
+                    ),
+                    row=i, col=1
+                )
+    
+    # ------------------------------------------------------------------
+    # CASE 2: Multiple Regions Selected (Parameter POV)
+    else:
+        # In this case, only the chosen parameter (selected_parameter) is displayed.
+        # Build subplot titles: first for DK, then one per region.
         subplot_titles = ["Denmark"]
         for region in selected_regions:
             if mode == "municipality":
@@ -1796,155 +1829,130 @@ def update_bar_chart(selected_months, selected_parameter, selected_regions, mode
                 region_title = str(region)
             subplot_titles.append(region_title)
         
-        ################ ADD DK ################
-        # Filter for Denmark (national-level data)
-        filtered_data = parameter_grid[
-            (parameter_grid["year"].between(2011, 2024))
-        ]
-  
-        # Save data (distribution)
-        if selected_year == None:
-            filtered_data = filtered_data[(filtered_data["month"].isin(selected_months))]
-            yearly_data = filtered_data.groupby("year")[list(PARAMETERS.keys())].agg(agg_funcs).reset_index()
-            bar_data = yearly_data
-            bar_dis = "year"
-        else:
-            filtered_data = filtered_data[filtered_data["year"] == selected_year]
-            monthly_data = filtered_data.groupby("month")[list(PARAMETERS.keys())].agg(agg_funcs).reset_index()
-            bar_data = monthly_data
-            bar_dis = "month"
-      
-        # Initialize subplots with custom titles
+        n_rows = len(selected_regions) + 1
         fig = make_subplots(
-            rows=len(selected_regions) + 1, cols=1, shared_xaxes=True,
+            rows=n_rows, cols=1, shared_xaxes=True,
             subplot_titles=subplot_titles
         )
-        
-        # Add Denmark's bar chart (color: forestgreen)
+        # DK national-level bar (average over grids)
+        df_dk = parameter_grid[parameter_grid["year"].between(2011, 2024)]
+        dk_agg, x_col = aggregate_param(df_dk, selected_parameter, selected_year, selected_months, average_over_grids=True)
         fig.add_trace(
             go.Bar(
-                x=bar_data[bar_dis],
-                y=bar_data[selected_region_or_parameter],
-                marker_color=DK_COLOR
+                x=dk_agg[x_col],
+                y=dk_agg[selected_parameter],
+                marker_color=DK_COLOR,
+                name="DK"
             ),
             row=1, col=1
         )
-        
-        if barchart_toggle and selected_year == None:
-            x = bar_data[bar_dis]
-            y = bar_data[selected_region_or_parameter]
-            
-            slope, intercept = np.polyfit(x, y, 1)
-            trend_y = slope * x + intercept
-            
+        # For monthly view, compute DK benchmark.
+        if selected_year is not None:
+            temp = df_dk.groupby(["cell_id", "month"])[list(PARAMETERS.keys())].sum().reset_index()
+            temp[list(PARAMETERS.keys())] = temp[list(PARAMETERS.keys())] / 14.0
+            benchmark_data = temp.groupby("month")[list(PARAMETERS.keys())].mean().reset_index()
             fig.add_trace(
                 go.Scatter(
-                    x=x,
+                    x=dk_agg[x_col],
+                    y=benchmark_data[selected_parameter],
+                    mode="markers",
+                    marker=dict(
+                        symbol="line-ew",
+                        color="black",
+                        size=15,
+                        line=dict(width=3, color="black")
+                    ),
+                    name=f"{PARAMETERS[selected_parameter]} Benchmark",
+                    showlegend=True
+                ),
+                row=1, col=1
+            )
+        if barchart_toggle and selected_year is None:
+            x_vals = dk_agg[x_col]
+            y_vals = dk_agg[selected_parameter]
+            slope, intercept = np.polyfit(x_vals, y_vals, 1)
+            trend_y = slope * np.array(x_vals) + intercept
+            fig.add_trace(
+                go.Scatter(
+                    x=x_vals,
                     y=trend_y,
                     mode="lines",
                     line=dict(dash="dot", color="black")
-                    ),
+                ),
                 row=1, col=1
-                )
+            )
         
-        ################ ADD REGIONS ################
-        # Add selected region data with colors from COLOR_PALETTE
-        combined_filtered_data = pd.concat([
-            parameter_grid[parameter_grid["cell_id"].isin(selected_regions)],
-            parameter_municipality[parameter_municipality["cell_id"].isin(selected_regions)]
-        ])
-        
-        # Save data (distribution) v1
-        regions_filtered_data = combined_filtered_data[
-            (combined_filtered_data["year"].between(2011, 2024))
-        ]
-        
+        # Loop over each selected region.
         for idx, region in enumerate(selected_regions):
-            region_data = regions_filtered_data[regions_filtered_data["cell_id"] == region]
-            if not region_data.empty:
-                # Save data (distribution) v2
-                if selected_year == None:
-                    region_data = region_data[(region_data["month"].isin(selected_months))]
-                    yearly_data = filtered_data.groupby("year")[list(PARAMETERS.keys())].agg(agg_funcs).reset_index()
-                    bar_data = yearly_data
-                    bar_dis = "year"
-                else:
-                    region_data = region_data[region_data["year"] == selected_year]
-                    monthly_data = filtered_data.groupby("month")[list(PARAMETERS.keys())].agg(agg_funcs).reset_index() 
-                    bar_data = monthly_data
-                    bar_dis = "month"
-                
-                region_color = COLOR_PALETTE[idx % len(COLOR_PALETTE)]
-                
-                # (The trace's name is still used for the legend; it doesn't affect the subplot title)
-                if mode == "municipality":
-                    region_str = str(region)
-                    feature = next(
-                        (f for f in geojson_municipality_data["features"] 
-                         if str(f["properties"].get("cell_id", "")) == region_str), 
-                        None
-                    )
-                    region_name = feature["properties"].get("municipality", f"Region {region}") if feature else f"Region {region}"
-                else:
-                    region_name = str(region)
-        
+            df_region = pd.concat([
+                parameter_grid[(parameter_grid["cell_id"] == region) & (parameter_grid["year"].between(2011, 2024))],
+                parameter_municipality[(parameter_municipality["cell_id"] == region) & (parameter_municipality["year"].between(2011, 2024))]
+            ])
+            reg_agg, x_col = aggregate_param(df_region, selected_parameter, selected_year, selected_months, average_over_grids=False)
+            region_color = COLOR_PALETTE[idx % len(COLOR_PALETTE)]
+            fig.add_trace(
+                go.Bar(
+                    x=reg_agg[x_col],
+                    y=reg_agg[selected_parameter],
+                    marker_color=region_color,
+                    name=str(region)
+                ),
+                row=idx+2, col=1
+            )
+            if barchart_toggle and selected_year is None:
+                x_vals = reg_agg[x_col]
+                y_vals = reg_agg[selected_parameter]
+                slope, intercept = np.polyfit(x_vals, y_vals, 1)
+                trend_y = slope * np.array(x_vals) + intercept
                 fig.add_trace(
-                    go.Bar(
-                        x=bar_data[bar_dis],
-                        y=bar_data[selected_region_or_parameter],
-                        marker_color=region_color,
-                        name=region_name  # This controls the legend, not the subplot title.
+                    go.Scatter(
+                        x=x_vals,
+                        y=trend_y,
+                        mode="lines",
+                        name=str(region),
+                        line=dict(dash="dot", color="black")
                     ),
                     row=idx+2, col=1
                 )
-                if barchart_toggle and selected_year == None:
-                    x = bar_data[bar_dis]
-                    y = bar_data[selected_region_or_parameter]
-                    
-                    slope, intercept = np.polyfit(x, y, 1)
-                    trend_y = slope * x + intercept
-                    
-                    fig.add_trace(
-                        go.Scatter(
-                            x=x,
-                            y=trend_y,
-                            mode="lines",
-                            name=region_name,
-                            line=dict(dash="dot", color="black")
-                            ),
-                        row=idx+2, col=1
-                        )
-        # Compute a global maximum for all region bar traces, excluding Denmark's bar (assumed to be the first bar)
+            if selected_year is not None:
+                # Compute benchmark for this region.
+                benchmark_reg = (df_region.groupby("month")[selected_parameter].sum() / 14).reset_index()
+                fig.add_trace(
+                    go.Scatter(
+                        x=reg_agg[x_col],
+                        y=benchmark_reg[selected_parameter],
+                        mode="markers",
+                        marker=dict(
+                            symbol="line-ew",
+                            color="black",
+                            size=15,
+                            line=dict(width=3, color="black")
+                        ),
+                        name=f"{PARAMETERS[selected_parameter]} Benchmark",
+                        showlegend=True
+                    ),
+                    row=idx+2, col=1
+                )
+        
+        # Compute a global y-axis maximum for all subplots (including DK) and apply uniformly.
         global_max = 0
-        first_bar_found = False
         for trace in fig.data:
             if trace.type == 'bar':
-                if not first_bar_found:
-                    # Skip Denmark's bar
-                    first_bar_found = True
-                    continue
                 trace_max = max(trace.y)
                 if trace_max > global_max:
                     global_max = trace_max
-        
-        # Optionally add a margin
         global_max *= 1.1
-        
-        # Set the same y-axis limit for all subplots (including Denmark's, to compare)
-        num_rows = len(selected_regions) + 1  # 1 for Denmark plus one per region
-        for row in range(2, num_rows + 1):
+        for row in range(1, n_rows+1):
             fig.update_yaxes(range=[0, global_max], row=row, col=1)
-
-        
+    
+    # Update x-axis ticks depending on whether we're showing years or months.
     if selected_year is None:
-        # Force every year to show from 2011 to 2024
         fig.update_xaxes(
             tickmode='array',
             tickvals=list(range(2011, 2025)),
             ticktext=[str(year) for year in range(2011, 2025)]
         )
     else:
-        # Replace month numbers with abbreviations
         fig.update_xaxes(
             tickmode='array',
             tickvals=list(range(1, 13)),
@@ -1958,10 +1966,10 @@ def update_bar_chart(selected_months, selected_parameter, selected_regions, mode
         plot_bgcolor="white",
         paper_bgcolor="white"
     )
-
     fig.update_yaxes(rangemode="nonnegative")
     
     return fig
+
 
 @app.callback(
     Output("dynamic-label-barchart", "children"),
@@ -2013,7 +2021,7 @@ def update_label(selected_parameter, selected_regions, selected_year, mode):
      Input("selected_year", "data"),
      Input("visualization-mode", "value")]
 )
-def update_label(selected_parameter, selected_regions, selected_year, mode):
+def update_label2(selected_parameter, selected_regions, selected_year, mode):
     
     # Save useful name for regions
     for region in selected_regions:
@@ -2036,19 +2044,13 @@ def update_label(selected_parameter, selected_regions, selected_year, mode):
         "max_temp": "Maximum Temperature (°C)",
         "min_temp": "Minimum Temperature (°C)",
         "mean_wind": "Mean Wind Speed (m/s)",
-        "ice_para": "Ice Days",
-        "heat_para": "Heating Degree Days",
-        "summer_para": "Summer days",
-        "extrain_para": "Extreme Rain Days",
-        "maxwind_para": "Max. Wind Speed 10 min. (m/s)",
-        "brightsun_para": "Bright Sunshine (hr)"
     }
     
     selected_parameter_name = parameters.get(selected_parameter)
     
     # Create text
     distribution_text = "Yearly" if selected_year == None else "Monthly"
-    parameter_text = f"{selected_parameter_name}"
+    parameter_text = "all parameters" if len(selected_regions) <= 1 else f"{selected_parameter_name}"
     region_text = ("in Denmark" if len(selected_regions) == 0 else f"in {region_name}" if len(selected_regions) == 1 else "")
     year_text = "" if selected_year == None else f"for {selected_year}"
 
@@ -2178,5 +2180,5 @@ def toggle_usecase_sheets(*args):
     return output_states
 
 if __name__ == "__main__":
-    # app.run_server(debug=True, port=5050)
-    app.run_server(debug=False, port=80, host='0.0.0.0')
+    app.run_server(debug=True, port=5050)
+    # app.run_server(debug=False, port=80, host='0.0.0.0')
