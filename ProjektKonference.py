@@ -16,8 +16,8 @@ from use_cases import use_cases, use_cases_data
 from info_sheet import info_sheet
 
 import warnings
-from numpy import RankWarning
-warnings.simplefilter('ignore', RankWarning)
+# from numpy import RankWarning
+warnings.simplefilter('ignore', np.exceptions.RankWarning)
 
 # File paths
 geojson_grid_file = "data/base_grid.geojson"
@@ -920,13 +920,13 @@ def update_trend_map(mode, parameter_main, parameter_sub, selected_years, select
      Input("visualization-mode", "value"),
      Input("trendline-toggle", "value"),
      Input("selected_year", "data"),
-     #Input("relative-values-toggle", "data")
+     Input("relative-values-toggle", "value")
      ]
 )
-def update_timeline(parameter, selected_months, selected_regions, mode, trendline_toggle, selected_year):
+def update_timeline(parameter, selected_months, selected_regions, mode, trendline_toggle, selected_year, use_relatives):
     # Set a top margin to move the chart a bit up (and remove an overall title)
     layout_margins = dict(t=50)
-    
+
     # Define parameters for the bar charts
     # Mapping for display names and units
     PARAMETERS = {
@@ -973,11 +973,11 @@ def update_timeline(parameter, selected_months, selected_regions, mode, trendlin
             line_data = monthly_data
             line_dis = "month"
               
-        # min_value = filtered_data[parameter].min()
-        # max_value = filtered_data[parameter].max()
+        min_value = filtered_data[parameter].min()
+        max_value = filtered_data[parameter].max()
     
-        # min_value_precip = filtered_data["acc_precip"].min()
-        # max_value_precip = filtered_data["acc_precip"].max()
+        min_value_precip = filtered_data["acc_precip"].min()
+        max_value_precip = filtered_data["acc_precip"].max()
            
         # Create figure layout
         fig = go.Figure()
@@ -1162,8 +1162,8 @@ def update_timeline(parameter, selected_months, selected_regions, mode, trendlin
                 title="Temperature (°C)",
                 side="left",
                 gridcolor="lightgrey",
-                range=[-20,30],
-                #range=([min_value-1, max_value+1] if "use" in use_relatives else None),
+                # range=[-20,30],
+                range=([min_value-1, max_value+1] if "use" in use_relatives else None),
                 zeroline=True,
                 zerolinewidth=2,
                 zerolinecolor="lightgrey",
@@ -1173,8 +1173,8 @@ def update_timeline(parameter, selected_months, selected_regions, mode, trendlin
                 title="Accumulated Precipitation (mm)",
                 overlaying="y",
                 side="right",
-                range=[0,150],
-                #range=([min_value_precip-5, max_value_precip+5] if "use" in use_relatives else None),
+                # range=[0,150],
+                range=([min_value_precip-5, max_value_precip+5] if "use" in use_relatives else None),
                 showgrid=False,
                 dtick=15
             ),
